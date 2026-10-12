@@ -14,7 +14,7 @@ const { chromium } = require(require('child_process').execSync('npm root -g').to
   put(3,'854',['27101','27102','27103','27104','27105','27106','27107','27108','27109','27110']); put(3,'855',['28001','28002']);
   put(3.5,'091',['11870','11871','11872']); put(3.5,'092',['11902']);
   await page.evaluate(b => { const k = 'gassenplan-offline-v1'; const m = JSON.parse(localStorage.getItem(k)); m.belegung = b; m.stamp = Date.now(); localStorage.setItem(k, JSON.stringify(m)); }, B);
-  await page.reload(); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(1600);
+  await page.reload(); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(2200);
   const r = await page.evaluate(() => {
     const rect = e => e.getBoundingClientRect();
     const aisles = [...document.querySelectorAll('.rack > .g')];
@@ -25,8 +25,10 @@ const { chromium } = require(require('child_process').execSync('npm root -g').to
     for (const s of document.querySelectorAll('.seam')) { const b = s.firstElementChild; if (b.classList.contains('free')) continue; const Bx = rect(b);
       for (const n of [s.previousElementSibling, s.nextElementSibling]) { const st = n && n.querySelector('.stack'); if (!st || !st.children.length) continue; const S = rect(st); if (S.bottom > Bx.top + 0.5 && S.top < Bx.bottom - 0.5) overlap++; } }
     let onPlate = 0; for (const s of document.querySelectorAll('.seam')) { const b = s.firstElementChild; if (b.classList.contains('free')) continue; const P = s.previousElementSibling.querySelector('.plate').getBoundingClientRect(), Bx = b.getBoundingClientRect(); if (Bx.left < P.right - 0.5 && Bx.right > P.left + 0.5) onPlate++; }
+    let minGap = 99; for (const s of document.querySelectorAll('.seam')) { const b = s.firstElementChild; if (b.classList.contains('free')) continue; const Bx = rect(b);
+      for (const [n, below] of [[s.previousElementSibling, false], [s.nextElementSibling, true]]) { const st = n && n.querySelector('.stack'); if (!st || !st.children.length) continue; const S = rect(st); minGap = Math.min(minGap, below ? S.top - Bx.bottom : Bx.top - S.bottom); } }
     const chargen = document.querySelectorAll('.g .ch').length;
-    return { heights, clipped, outside, overlap, onPlate, chargenSichtbar: chargen, planHoehe: Math.round(rect(document.getElementById('floor')).height) };
+    return { heights, minGap: Math.round(minGap * 10) / 10, clipped, outside, overlap, onPlate, chargenSichtbar: chargen, planHoehe: Math.round(rect(document.getElementById('floor')).height) };
   });
   console.log(JSON.stringify(r), errs);
   console.log(await page.evaluate(() => [...document.querySelectorAll(".g .t")].filter(t => t.scrollWidth > t.clientWidth + 1 || t.scrollHeight > t.clientHeight + 1).map(t => [t.textContent, t.scrollWidth, t.clientWidth, t.scrollHeight, t.clientHeight, t.closest(".g").querySelector(".plate").textContent])));
