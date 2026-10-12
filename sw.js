@@ -1,10 +1,10 @@
 // Gassenplan: hält die App für den Betrieb ohne Internet bereit.
 // Antwortet sofort aus dem Speicher und lädt im Hintergrund die neueste Fassung nach.
-const CACHE = 'gassenplan-v1';
+const CACHE = 'gassenplan-v2';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -19,7 +19,7 @@ self.addEventListener('fetch', e => {
   e.respondWith(caches.open(CACHE).then(async cache => {
     const key = req.mode === 'navigate' ? './' : req;
     const hit = await cache.match(key, { ignoreSearch: true });
-    const fresh = fetch(req).then(res => {
+    const fresh = fetch(req.url, { cache: 'no-cache' }).then(res => {
       if (res.ok) cache.put(key, res.clone());
       return res;
     }).catch(() => hit || Response.error());
