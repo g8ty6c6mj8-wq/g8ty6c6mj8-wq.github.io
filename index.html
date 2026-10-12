@@ -186,7 +186,7 @@ button, input { font: inherit; color: inherit; }
 .g .plate {
   flex: 0 0 38px;
   display: grid; place-items: center;
-  font-family: var(--f-sign); font-weight: 700; font-size: 22px;
+  font-family: var(--f-sign); font-weight: 700; font-size: 20px;
   font-variant-numeric: tabular-nums;
   border-right: 1px solid var(--line);
 }
@@ -199,10 +199,10 @@ button, input { font: inherit; color: inherit; }
 }
 .g .t {
   display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  text-align: left; line-height: 17px;
+  text-align: left; line-height: 16px;
   background: var(--tag); padding: 0 5px; border-radius: 4px;
 }
-.g .t b { font-family: var(--f-sign); font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; margin-right: 5px; }
+.g .t b { font-family: var(--f-sign); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; margin-right: 5px; }
 .g .t .ch { font-size: 12px; font-weight: 500; }
 .g .t .ch:not(:last-child)::after { content: ", "; }
 .g .t .ch.none { color: var(--muted); font-style: italic; }
@@ -212,8 +212,10 @@ button, input { font: inherit; color: inherit; }
 .side > .g:first-child { border-radius: 6px 6px 0 0; }
 .side > .g:last-child { border-radius: 0 0 6px 6px; }
 .seam + .g { margin-top: -1px; }
-.g:not(.half) { height: 66px; min-height: 0; }
-.g:not(.half) .bays { overflow: hidden; padding: 4px 5px; gap: 2px; }
+.g:not(.half) { height: 44px; min-height: 0; }
+.g:not(.half) .bays { overflow: hidden; padding: 0 5px; gap: 4px; flex-direction: row; align-items: center; justify-content: flex-start; }
+.g:not(.half) .t { flex: 0 1 auto; min-width: 0; }
+.g .t.more { flex: 0 0 auto; padding: 0 1px; }
 .g[aria-pressed="true"]:not(.half), .g.match:not(.half) { position: relative; z-index: 1; }
 
 /* Zwischenplatz: sitzt genau auf der Grenze zweier Gassen */
@@ -228,17 +230,17 @@ button, input { font: inherit; color: inherit; }
   font-size: 11px; font-weight: 600; letter-spacing: .02em; color: var(--muted);
 }
 .g.half.free {
-  width: 18px; height: 18px; border-radius: 50%;
+  width: 16px; height: 16px; border-radius: 50%;
   display: grid; place-items: center;
   border: 1px dashed var(--muted); background: var(--floor);
 }
 .side.right .g.half.free { right: 6px; }
 .side.left .g.half.free { left: 6px; }
 .g.half.free::before { content: ""; position: absolute; inset: -6px -10px; }
-.g.half.free::after { content: "+"; font-size: 14px; line-height: 1; font-weight: 600; color: var(--muted); }
+.g.half.free::after { content: "+"; font-size: 13px; line-height: 1; font-weight: 600; color: var(--muted); }
 .g.half.free > * { display: none; }
 .g.half:not(.free) {
-  left: 4px; right: 4px; height: 24px; min-height: 0; border-radius: 6px; overflow: hidden;
+  left: 4px; right: 4px; height: 18px; min-height: 0; border-radius: 5px; overflow: hidden;
   border: 1.5px dashed var(--ink); background: var(--rack);
   box-shadow: 0 2px 6px var(--shadow);
 }
@@ -249,7 +251,10 @@ button, input { font: inherit; color: inherit; }
   background-image: none; flex-direction: row; flex-wrap: nowrap; align-items: center;
   justify-content: flex-start; gap: 4px; padding: 0 4px; overflow: hidden;
 }
-.g.half:not(.free) .t { flex: 0 1 auto; min-width: 0; }
+.g.half:not(.free) .t { flex: 0 1 auto; min-width: 0; line-height: 13px; }
+.g.half:not(.free) .t b { font-size: 12px; }
+.g.half:not(.free) .t .ch { font-size: 10.5px; }
+.g.half:not(.free) .plate { font-size: 10px; padding-inline: 4px; }
 .g.half:not(.free) .t.more { flex: 0 0 auto; padding: 0 2px; }
 .g:active { transform: scale(.985); }
 .g[aria-pressed="true"] { border-color: var(--mark); box-shadow: 0 0 0 2px var(--mark); }
@@ -585,7 +590,7 @@ button, input { font: inherit; color: inherit; }
       if (isHalf(n)) b.classList.toggle('free', !ps.length);
       const bays = b.querySelector('.bays');
       bays.replaceChildren();
-      const shown = isHalf(n) ? ps.slice(0, 1) : ps.slice(0, ps.length > 2 ? 1 : 2);
+      const shown = ps.slice(0, 1);
       for (const p of shown) {
         const ch = p.chargen || [];
         bays.append(el('span', { class: 't' + (hitM.has(p.id) ? ' hl' : '') },
@@ -594,7 +599,7 @@ button, input { font: inherit; color: inherit; }
             ? ch.map(c => el('span', { class: 'ch' + (q && c.toLowerCase().includes(q) ? ' hl' : '') }, c))
             : el('span', { class: 'ch none' }, 'ohne Charge')));
       }
-      if (ps.length > shown.length) bays.append(el('span', { class: 't more' }, '+ ' + (ps.length - shown.length) + (isHalf(n) ? '' : ' weitere')));
+      if (ps.length > shown.length) bays.append(el('span', { class: 't more' }, '+' + (ps.length - shown.length)));
       b.classList.toggle('match', hitG.has(n));
       b.setAttribute('aria-pressed', String(state.current === n));
       b.setAttribute('aria-label', (isHalf(n) ? 'Zwischen Gasse ' + (n - 0.5) + ' und ' + (n + 0.5) : 'Gasse ' + n) + (ps.length
