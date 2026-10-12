@@ -326,8 +326,6 @@
     renderSync();
   }
 
-  $('nojs').hidden = true;
-  $('actions').hidden = false;
   $('sync').hidden = false;
 
   // Gehostete App: offline verfügbar machen, neue Fassung automatisch laden, Hinweis zum Home-Bildschirm in Safari
@@ -344,50 +342,7 @@
     if (!standalone && /iPhone|iPad|iPod/.test(navigator.userAgent)) $('install-hint').hidden = false;
   }
 
-  // ---------- Stand aus einer Datei übernehmen ----------
-  function parseShared(text) {
-    const m = text.match(/<script type="application\/json" id="seed">([\s\S]*?)<\/script>/);
-    const d = JSON.parse(m ? m[1] : text);
-    if (!d || typeof d.models !== 'object' || typeof d.belegung !== 'object') throw new Error('format');
-    return d;
-  }
-  $('import-file').addEventListener('change', async () => {
-    const inp = $('import-file');
-    const f = inp.files && inp.files[0];
-    inp.value = '';
-    if (!f || !mem) return;
-    let d;
-    try { d = parseShared(await f.text()); }
-    catch (_) { toast('Diese Datei enthält keinen Gassenplan-Stand.'); return; }
-    const n = Object.keys(d.belegung).length, own = Object.keys(mem.belegung).length;
-    const shared = !!token;
-    const box = $('notice');
-    box.replaceChildren(
-      el('div', {}, 'Datei „' + f.name + '“: Stand vom ' + fmt(d.stamp) + ' mit ' + n + (n === 1 ? ' Eintrag' : ' Einträgen') + '. ' +
-        (shared
-          ? 'Übernehmen fügt die Einträge der Datei zum gemeinsamen Stand hinzu.'
-          : 'Übernehmen ersetzt deinen Stand auf diesem Gerät (' + own + (own === 1 ? ' Eintrag' : ' Einträge') + ').')),
-      el('div', { class: 'row' },
-        el('button', { type: 'button', class: 'btn primary', onclick: () => {
-          if (shared) {
-            const m = mergeStates(pick(mem), { models: d.models, belegung: d.belegung, deleted: {} });
-            mem.models = m.models; mem.belegung = m.belegung;
-          } else {
-            mem.models = clone(d.models);
-            mem.belegung = clone(d.belegung);
-          }
-          mem.seedStamp = Math.max(mem.seedStamp || 0, SEED.stamp || 0);
-          box.hidden = true;
-          emit('models');
-          changed('belegung');
-          toast('Stand übernommen.');
-        } }, 'Übernehmen'),
-        el('button', { type: 'button', class: 'btn', onclick: () => { box.hidden = true; } }, 'Abbrechen')));
-    box.hidden = false;
-    box.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  });
-
-  // ---------- Export als neue Datei ----------
+  // ---------- Fertig gezeichnete Fassung (beim Bauen, damit der Plan sofort sichtbar ist) ----------
   // Ersetzt den Bereich zwischen <!--name--> und <!--/name--> im Quelltext
   function between(html, name, content) {
     const a = '<!--' + name + '-->', b = '<!--/' + name + '-->';
@@ -410,31 +365,3 @@
     return html;
   }
   window.__gassenplanSnapshot = snapshotHtml;
-
-  async function exportFile() {
-    if (!mem) return;
-    // Dieses Gerät entspricht jetzt genau der exportierten Datei
-    mem.seedStamp = mem.stamp;
-    saveStore();
-    const html = snapshotHtml();
-    const d = new Date();
-    const pad = x => String(x).padStart(2, '0');
-    const name = 'Gassenplan-' + d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + '.html';
-    const file = new File([html], name, { type: 'text/html' });
-    try {
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Gassenplan' });
-        return;
-      }
-    } catch (e) {
-      if (e && e.name === 'AbortError') return;
-    }
-    const url = URL.createObjectURL(file);
-    const a = el('a', { href: url, download: name });
-    document.body.append(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-    toast('Datei ' + name + ' gespeichert.');
-  }
-  $('export').addEventListener('click', exportFile);

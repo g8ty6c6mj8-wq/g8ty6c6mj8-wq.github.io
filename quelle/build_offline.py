@@ -1,7 +1,7 @@
-"""Baut aus der Artifact-Seite eine eigenständige Datei (Schriften eingebettet, Daten im Gerät).
+"""Baut aus der Vorlage die App für GitHub Pages (Schriften eingebettet, Daten auf dem Gerät, Abgleich über GitHub).
 
-python3 build_offline.py OUT.html [--pwa]
---pwa fügt Manifest, Home-Bildschirm-Angaben und den Service Worker hinzu (für die gehostete App).
+python3 build_offline.py OUT.html --pwa
+--pwa fügt Manifest, Home-Bildschirm-Angaben und den Service Worker hinzu.
 """
 import base64, json, pathlib, sys, time
 
@@ -30,18 +30,13 @@ link_start = src.index('<link rel="preconnect"')
 link_end = src.index("<style>")
 src = src[:link_start] + "<style>\n" + ff + "</style>\n" + src[link_end:]
 
-# 2. Bereich „Stand“ unter dem Plan: teilen und laden
+# 2. Bereich „Stand“ und gemeinsamer Speicher unter dem Plan
 src = must_replace(src, "zwischen ihnen.</p>\n</div>",
 """zwischen ihnen.</p>
 
   <section class="offline">
     <div class="label">Stand</div>
     <!--stand--><p id="stand">Stand wird geladen …</p><!--/stand-->
-    <div class="actions" id="actions" hidden>
-      <button class="btn primary" id="export" type="button">Stand als Datei teilen</button>
-      <label class="btn" for="import-file">Stand aus Datei laden</label>
-      <input class="vh" id="import-file" type="file" accept=".html,.htm,.json,text/html,application/json">
-    </div>
     <div class="sync" id="sync" hidden>
       <div class="label">Gemeinsamer Speicher</div>
       <p id="sync-status">Nicht verbunden. Jedes Handy hat seinen eigenen Stand.</p>
@@ -55,16 +50,13 @@ src = must_replace(src, "zwischen ihnen.</p>\n</div>",
       </div>
     </div>
     <p class="hint" id="install-hint" hidden><b>App ohne Internet:</b> In Safari unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“. Danach startet der Gassenplan wie eine App, auch ohne Netz.</p>
-    <p class="hint">Ohne gemeinsamen Speicher bleiben die Einträge nur auf diesem Gerät. Dann kannst du sie mit „Stand als Datei teilen“ verschicken, und der andere übernimmt sie mit „Stand aus Datei laden“.</p>
+    <p class="hint">Ohne gemeinsamen Speicher bleiben die Einträge nur auf diesem Handy.</p>
   </section>
 </div>""")
 src = must_replace(src, "@media (prefers-reduced-motion: reduce) {",
 """.offline { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
 .offline p { margin: 0; }
 .offline #stand { font-size: 14px; }
-.actions { display: grid; gap: 8px; }
-.actions .btn { width: 100%; height: 44px; }
-.vh { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; pointer-events: none; }
 .notice .row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .sync { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
 .sync #sync-status { font-size: 14px; }
@@ -77,16 +69,12 @@ src = must_replace(src, "@media (prefers-reduced-motion: reduce) {",
 src = must_replace(src, "<p>Tippe auf eine Gasse, um Modelle und Chargen einzutragen.</p>",
                    "<p>Tippe auf eine Gasse, um Modelle und Chargen einzutragen. Läuft ohne Internet.</p>\n    <p class=\"syncline\" id=\"syncline\" hidden></p>")
 
-# 2b. Markierungen für die fertig gezeichnete Ansicht, Hinweis für Vorschauen ohne Skript
+# 2b. Markierungen für die fertig gezeichnete Ansicht (Plan steht sofort da, noch bevor das Skript läuft)
 src = must_replace(src, '<div class="chips" id="model-chips">', '<!--chips--><div class="chips" id="model-chips">')
 chips_end = src.index("</div>", src.index('<!--chips-->')) + len("</div>")
 src = src[:chips_end] + "<!--/chips-->" + src[chips_end:]
 src = must_replace(src, '  <div class="floor" id="floor">', '  <!--plan--><div class="floor" id="floor">')
 src = must_replace(src, '\n\n  <div class="end end-back">', '<!--/plan-->\n\n  <div class="end end-back">')
-src = must_replace(src, '  <div class="notice" id="notice" hidden></div>',
-  '  <div class="notice" id="nojs"><b>Nur Ansicht.</b> Diese Vorschau zeigt den Plan, kann aber nichts eintragen oder suchen. '
-  'Zum Bearbeiten den Gassenplan unter ' + APP_URL + ' öffnen und dort „Stand aus Datei laden“ tippen.</div>\n'
-  '  <div class="notice" id="notice" hidden></div>')
 
 # 3. Quelltext vor dem ersten Rendern festhalten (für den Export)
 src = must_replace(src, "(() => {\n  const TOTAL = 31, RIGHT_END = 19;",

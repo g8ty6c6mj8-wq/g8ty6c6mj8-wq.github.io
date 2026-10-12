@@ -385,9 +385,6 @@ button, input { font: inherit; color: inherit; }
 .offline { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
 .offline p { margin: 0; }
 .offline #stand { font-size: 14px; }
-.actions { display: grid; gap: 8px; }
-.actions .btn { width: 100%; height: 44px; }
-.vh { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; pointer-events: none; }
 .notice .row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .sync { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
 .sync #sync-status { font-size: 14px; }
@@ -412,7 +409,6 @@ button, input { font: inherit; color: inherit; }
     <p class="syncline" id="syncline" hidden=""></p>
   </header>
 
-  <div class="notice" id="nojs"><b>Nur Ansicht.</b> Diese Vorschau zeigt den Plan, kann aber nichts eintragen oder suchen. Zum Bearbeiten den Gassenplan unter https://g8ty6c6mj8-wq.github.io/ öffnen und dort „Stand aus Datei laden“ tippen.</div>
   <div class="notice" id="notice" hidden=""></div>
 
   <section class="finder">
@@ -447,11 +443,6 @@ button, input { font: inherit; color: inherit; }
   <section class="offline">
     <div class="label">Stand</div>
     <!--stand--><p id="stand">Stand: 12.10.2026, 04:46 · 1 Eintrag in den Gassen</p><!--/stand-->
-    <div class="actions" id="actions" hidden="">
-      <button class="btn primary" id="export" type="button">Stand als Datei teilen</button>
-      <label class="btn" for="import-file">Stand aus Datei laden</label>
-      <input class="vh" id="import-file" type="file" accept=".html,.htm,.json,text/html,application/json">
-    </div>
     <div class="sync" id="sync" hidden="">
       <div class="label">Gemeinsamer Speicher</div>
       <p id="sync-status">Nicht verbunden. Jedes Handy hat seinen eigenen Stand.</p>
@@ -465,7 +456,7 @@ button, input { font: inherit; color: inherit; }
       </div>
     </div>
     <p class="hint" id="install-hint" hidden=""><b>App ohne Internet:</b> In Safari unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“. Danach startet der Gassenplan wie eine App, auch ohne Netz.</p>
-    <p class="hint">Ohne gemeinsamen Speicher bleiben die Einträge nur auf diesem Gerät. Dann kannst du sie mit „Stand als Datei teilen“ verschicken, und der andere übernimmt sie mit „Stand aus Datei laden“.</p>
+    <p class="hint">Ohne gemeinsamen Speicher bleiben die Einträge nur auf diesem Handy.</p>
   </section>
 </div>
 
@@ -1158,8 +1149,6 @@ button, input { font: inherit; color: inherit; }
     renderSync();
   }
 
-  $('nojs').hidden = true;
-  $('actions').hidden = false;
   $('sync').hidden = false;
 
   // Gehostete App: offline verfügbar machen, neue Fassung automatisch laden, Hinweis zum Home-Bildschirm in Safari
@@ -1176,50 +1165,7 @@ button, input { font: inherit; color: inherit; }
     if (!standalone && /iPhone|iPad|iPod/.test(navigator.userAgent)) $('install-hint').hidden = false;
   }
 
-  // ---------- Stand aus einer Datei übernehmen ----------
-  function parseShared(text) {
-    const m = text.match(/<script type="application\/json" id="seed">([\s\S]*?)<\/script>/);
-    const d = JSON.parse(m ? m[1] : text);
-    if (!d || typeof d.models !== 'object' || typeof d.belegung !== 'object') throw new Error('format');
-    return d;
-  }
-  $('import-file').addEventListener('change', async () => {
-    const inp = $('import-file');
-    const f = inp.files && inp.files[0];
-    inp.value = '';
-    if (!f || !mem) return;
-    let d;
-    try { d = parseShared(await f.text()); }
-    catch (_) { toast('Diese Datei enthält keinen Gassenplan-Stand.'); return; }
-    const n = Object.keys(d.belegung).length, own = Object.keys(mem.belegung).length;
-    const shared = !!token;
-    const box = $('notice');
-    box.replaceChildren(
-      el('div', {}, 'Datei „' + f.name + '“: Stand vom ' + fmt(d.stamp) + ' mit ' + n + (n === 1 ? ' Eintrag' : ' Einträgen') + '. ' +
-        (shared
-          ? 'Übernehmen fügt die Einträge der Datei zum gemeinsamen Stand hinzu.'
-          : 'Übernehmen ersetzt deinen Stand auf diesem Gerät (' + own + (own === 1 ? ' Eintrag' : ' Einträge') + ').')),
-      el('div', { class: 'row' },
-        el('button', { type: 'button', class: 'btn primary', onclick: () => {
-          if (shared) {
-            const m = mergeStates(pick(mem), { models: d.models, belegung: d.belegung, deleted: {} });
-            mem.models = m.models; mem.belegung = m.belegung;
-          } else {
-            mem.models = clone(d.models);
-            mem.belegung = clone(d.belegung);
-          }
-          mem.seedStamp = Math.max(mem.seedStamp || 0, SEED.stamp || 0);
-          box.hidden = true;
-          emit('models');
-          changed('belegung');
-          toast('Stand übernommen.');
-        } }, 'Übernehmen'),
-        el('button', { type: 'button', class: 'btn', onclick: () => { box.hidden = true; } }, 'Abbrechen')));
-    box.hidden = false;
-    box.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  });
-
-  // ---------- Export als neue Datei ----------
+  // ---------- Fertig gezeichnete Fassung (beim Bauen, damit der Plan sofort sichtbar ist) ----------
   // Ersetzt den Bereich zwischen <!--name--> und <!--/name--> im Quelltext
   function between(html, name, content) {
     const a = '<!--' + name + '-->', b = '<!--/' + name + '-->';
@@ -1242,33 +1188,5 @@ button, input { font: inherit; color: inherit; }
     return html;
   }
   window.__gassenplanSnapshot = snapshotHtml;
-
-  async function exportFile() {
-    if (!mem) return;
-    // Dieses Gerät entspricht jetzt genau der exportierten Datei
-    mem.seedStamp = mem.stamp;
-    saveStore();
-    const html = snapshotHtml();
-    const d = new Date();
-    const pad = x => String(x).padStart(2, '0');
-    const name = 'Gassenplan-' + d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + '.html';
-    const file = new File([html], name, { type: 'text/html' });
-    try {
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Gassenplan' });
-        return;
-      }
-    } catch (e) {
-      if (e && e.name === 'AbortError') return;
-    }
-    const url = URL.createObjectURL(file);
-    const a = el('a', { href: url, download: name });
-    document.body.append(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-    toast('Datei ' + name + ' gespeichert.');
-  }
-  $('export').addEventListener('click', exportFile);
 })();
 </script></body></html>
