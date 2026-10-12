@@ -24,8 +24,9 @@ const { chromium } = require(require('child_process').execSync('npm root -g').to
     for (const a of aisles) { const st = a.querySelector('.stack'); if (!st || !st.children.length) continue; const A = rect(a), S = rect(st); if (S.top < A.top - 0.5 || S.bottom > A.bottom + 0.5 || S.left < A.left - 0.5 || S.right > A.right + 0.5) outside++; }
     for (const s of document.querySelectorAll('.seam')) { const b = s.firstElementChild; if (b.classList.contains('free')) continue; const Bx = rect(b);
       for (const n of [s.previousElementSibling, s.nextElementSibling]) { const st = n && n.querySelector('.stack'); if (!st || !st.children.length) continue; const S = rect(st); if (S.bottom > Bx.top + 0.5 && S.top < Bx.bottom - 0.5) overlap++; } }
+    let onPlate = 0; for (const s of document.querySelectorAll('.seam')) { const b = s.firstElementChild; if (b.classList.contains('free')) continue; const P = s.previousElementSibling.querySelector('.plate').getBoundingClientRect(), Bx = b.getBoundingClientRect(); if (Bx.left < P.right - 0.5 && Bx.right > P.left + 0.5) onPlate++; }
     const chargen = document.querySelectorAll('.g .ch').length;
-    return { heights, clipped, outside, overlap, chargenSichtbar: chargen, planHoehe: Math.round(rect(document.getElementById('floor')).height) };
+    return { heights, clipped, outside, overlap, onPlate, chargenSichtbar: chargen, planHoehe: Math.round(rect(document.getElementById('floor')).height) };
   });
   console.log(JSON.stringify(r), errs);
   console.log(await page.evaluate(() => [...document.querySelectorAll(".g .t")].filter(t => t.scrollWidth > t.clientWidth + 1 || t.scrollHeight > t.clientHeight + 1).map(t => [t.textContent, t.scrollWidth, t.clientWidth, t.scrollHeight, t.clientHeight, t.closest(".g").querySelector(".plate").textContent])));

@@ -16,8 +16,10 @@
   --mark-ink: #1b2129;
   --tag: #dde3ea;
   --danger: #c0392b;
-  --seam-bg: #fff4d1;
-  --seam-line: #d9a90f;
+  --seam-bg: #e2f0f8;
+  --seam-line: #2f86b8;
+  --seam-ink: #ffffff;
+  --plate-bg: #eef1f5;
   --sheet: #ffffff;
   --shadow: rgba(20, 28, 38, .18);
   --f-sign: "Barlow Condensed", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif;
@@ -27,14 +29,14 @@
   :root:not([data-theme="light"]) {
     --floor: #14181d; --rack: #1e242b; --rack-bay: #262d35; --line: #333c47;
     --ink: #e7eaee; --muted: #98a2ad; --mark: #f5c22e; --mark-ink: #14181d;
-    --tag: #2e3640; --danger: #ef6b5b; --seam-bg: #3a3218; --seam-line: #9c7a14;
+    --tag: #2e3640; --danger: #ef6b5b; --seam-bg: #15303d; --seam-line: #4aa3d6; --seam-ink: #0d1820; --plate-bg: #252c34;
     --sheet: #1e242b; --shadow: rgba(0, 0, 0, .5); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --floor: #14181d; --rack: #1e242b; --rack-bay: #262d35; --line: #333c47;
   --ink: #e7eaee; --muted: #98a2ad; --mark: #f5c22e; --mark-ink: #14181d;
-  --tag: #2e3640; --danger: #ef6b5b; --seam-bg: #3a3218; --seam-line: #9c7a14;
+  --tag: #2e3640; --danger: #ef6b5b; --seam-bg: #15303d; --seam-line: #4aa3d6; --seam-ink: #0d1820; --plate-bg: #252c34;
   --sheet: #1e242b; --shadow: rgba(0, 0, 0, .5); color-scheme: dark;
 }
 
@@ -176,6 +178,7 @@ button, input { font: inherit; color: inherit; }
   border-right: 1px solid var(--line);
 }
 .side.left .g .plate { border-right: 0; border-left: 1px solid var(--line); }
+.g:not(.half) .plate { background: var(--plate-bg); }
 .g .bays {
   flex: 1; min-width: 0;
   background-image: repeating-linear-gradient(90deg, transparent 0 22px, var(--rack-bay) 22px 24px);
@@ -187,7 +190,7 @@ button, input { font: inherit; color: inherit; }
 .g .t {
   display: block; max-width: 100%; white-space: normal;
   text-align: left; line-height: 16px;
-  background: var(--tag); padding: 1px 4px; border-radius: 4px;
+  background: var(--tag); padding: 0 4px; border-radius: 4px;
 }
 .g .t b { font-family: var(--f-sign); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; margin-right: 4px; white-space: nowrap; display: inline-block; }
 .g .t .ch { display: inline-block; font-size: 12px; font-weight: 500; white-space: nowrap; margin-right: 3px; }
@@ -227,14 +230,19 @@ button, input { font: inherit; color: inherit; }
 .g.half.free > * { display: none; }
 /* belegter Zwischenplatz: gelblich hinterlegte Leiste genau auf der Grenze */
 .g.half:not(.free) {
-  left: 3px; right: 3px; height: auto; min-height: 20px; border-radius: 4px;
+  height: auto; min-height: 16px; border-radius: 4px;
   border: 1px solid var(--seam-line); background: var(--seam-bg);
 }
-.g.half:not(.free) .plate { color: var(--ink); }
+.side.right .g.half:not(.free) { left: 31px; right: 3px; flex-direction: row-reverse; }
+.side.left .g.half:not(.free) { left: 3px; right: 31px; flex-direction: row; }
+.g.half:not(.free) .plate {
+  align-self: center; height: 14px; line-height: 14px; margin: 0 2px; padding: 0 4px; border-radius: 3px;
+  background: var(--seam-line); color: var(--seam-ink); font-size: 11px; font-weight: 700;
+}
 .g.half.match { border-color: var(--mark); }
 .g.half[aria-pressed="true"] { border-color: var(--mark); box-shadow: 0 0 0 2px var(--mark); }
-.g.half:not(.free) .bays { background-image: none; justify-content: center; padding: 1px 4px; }
-.g.half:not(.free) .t { background: transparent; padding: 0; }
+.g.half:not(.free) .bays { background-image: none; justify-content: center; padding: 0 3px; }
+.g.half:not(.free) .t { background: transparent; padding: 0; line-height: 14px; }
 .g:active { transform: scale(.985); }
 .g[aria-pressed="true"] { border-color: var(--mark); box-shadow: 0 0 0 2px var(--mark); }
 .g[aria-pressed="true"] .plate { background: var(--mark); color: var(--mark-ink); }
@@ -713,11 +721,11 @@ button, input { font: inherit; color: inherit; }
   $('next').addEventListener('click', () => step(1));
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.current) close(); });
 
-  const MIN_ROW = 44, EDGE = 7;
+  const MIN_ROW = 34, EDGE = 4;
   function fitRows() {
     const floor = $('floor');
     const half = s => (s && s.classList.contains('seam') && !s.firstElementChild.classList.contains('free'))
-      ? Math.ceil(s.firstElementChild.offsetHeight / 2) + 3 : EDGE;
+      ? Math.ceil(s.firstElementChild.offsetHeight / 2) + 2 : EDGE;
     let row = MIN_ROW;
     floor.querySelectorAll('.side > .g').forEach(a => {
       const pt = half(a.previousElementSibling), pb = half(a.nextElementSibling);
