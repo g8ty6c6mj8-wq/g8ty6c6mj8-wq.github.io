@@ -504,6 +504,7 @@ button, input { font: inherit; color: inherit; }
 .splash .name { font-family: var(--f-sign); font-weight: 700; font-size: 30px; letter-spacing: .08em; text-transform: uppercase; animation: rise .6s var(--ease) .1s both; }
 .splash .ver { font-size: 12px; font-weight: 600; letter-spacing: .08em; color: var(--muted); animation: fade .6s ease .3s both; }
 .splash .ver b { color: var(--seam-line); }
+.splash .dev { margin-top: 18px; font-size: 12px; color: var(--muted); letter-spacing: .04em; animation: fade .6s ease .45s both; }
 @keyframes splash-out { to { opacity: 0; visibility: hidden; } }
 .version { text-align: center; font-size: 11px; color: var(--muted); opacity: .75; letter-spacing: .04em; }
 
@@ -538,7 +539,8 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     <svg width="20" height="20" viewBox="0 0 20 20"><g fill="#1b2129"><rect x="2" y="3" width="6" height="3" rx="1"></rect><rect x="2" y="8.5" width="6" height="3" rx="1"></rect><rect x="2" y="14" width="6" height="3" rx="1"></rect><rect x="12" y="3" width="6" height="3" rx="1"></rect><rect x="12" y="8.5" width="6" height="3" rx="1"></rect><rect x="12" y="14" width="6" height="3" rx="1"></rect></g></svg>
   </span>
   <div class="name">Gassenplan</div>
-  <div class="ver"><span class="app-version">Version 2.1</span> · <b>Alpha</b></div>
+  <div class="ver"><span class="app-version">Version 2.2</span> · <b>Alpha</b></div>
+  <div class="dev">Entwickelt von Kadir Atak</div>
 </div>
 
 <header class="appbar">
@@ -606,7 +608,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   </div><!--/plan-->
 
   <div class="end end-back" id="end-back"><span class="door"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5V2.5h7v10M9.5 12.5h2M6.5 7.5h.01"></path></svg>Eingang · hinten</span></div>
-  <div class="version">Gassenplan <span class="app-version">Version 2.1</span> · Alpha</div>
+  <div class="version">Gassenplan <span class="app-version">Version 2.2</span> · Alpha</div>
 </div>
 
 <div class="scrim" id="scrim" hidden=""></div>
@@ -637,7 +639,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   <div class="sheet-in">
     <div class="sheet-head">
       <div class="sheet-title">
-        <div class="label">Gassenplan · <span class="app-version">Version 2.1</span> · Alpha</div>
+        <div class="label">Gassenplan · <span class="app-version">Version 2.2</span> · Alpha</div>
         <h2 id="settings-h">Einstellungen und Hilfe</h2>
       </div>
       <button class="icon-btn" id="close-settings" type="button" aria-label="Schließen">
@@ -682,7 +684,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 (() => {
   const SOURCE = '<!doctype html>\n' + document.documentElement.outerHTML;
   // Version: bei jeder Verbesserung erhöhen (siehe CHANGELOG.md)
-  const APP_VERSION = '2.1', APP_STAGE = 'Alpha';
+  const APP_VERSION = '2.2', APP_STAGE = 'Alpha';
   const TOTAL = 31, RIGHT_END = 19;
   const $ = id => document.getElementById(id);
   document.querySelectorAll('.app-version').forEach(e => { e.textContent = 'Version ' + APP_VERSION; });

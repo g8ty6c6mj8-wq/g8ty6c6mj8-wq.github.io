@@ -3,6 +3,9 @@
 Die aktuelle Version steht in `quelle/gassenplan.html` (`APP_VERSION`) und wird beim Start der App
 kurz eingeblendet. Bei jeder Verbesserung wird sie erhöht.
 
+## 2.2 · Alpha
+- Startbild nennt den Entwickler: Kadir Atak
+
 ## 2.1 · Alpha
 - Mehr Abstand zwischen Zwischenplätzen und den Einträgen der Gassen daneben
 - Versionsanzeige: Startbild beim Öffnen, kleine Angabe unter dem Plan und in den Einstellungen
