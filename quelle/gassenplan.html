@@ -1,0 +1,811 @@
+<title>Gassenplan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: Draufsicht auf die Halle. Vorne (Eingang) oben, hinten unten. Rechts 1–19 von vorne nach hinten,
+   links 20–31 von hinten nach vorne, Hauptgang in der Mitte. Gasse antippen → Bottom-Sheet mit Modellen und Chargen. */
+:root {
+  --floor: #eceef1;
+  --rack: #ffffff;
+  --rack-bay: #e3e7ec;
+  --line: #c6ccd4;
+  --ink: #1b2129;
+  --muted: #5a6470;
+  --mark: #f2b705;
+  --mark-ink: #1b2129;
+  --tag: #dde3ea;
+  --danger: #c0392b;
+  --sheet: #ffffff;
+  --shadow: rgba(20, 28, 38, .18);
+  --f-sign: "Barlow Condensed", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --floor: #14181d; --rack: #1e242b; --rack-bay: #262d35; --line: #333c47;
+    --ink: #e7eaee; --muted: #98a2ad; --mark: #f5c22e; --mark-ink: #14181d;
+    --tag: #2e3640; --danger: #ef6b5b;
+    --sheet: #1e242b; --shadow: rgba(0, 0, 0, .5); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --floor: #14181d; --rack: #1e242b; --rack-bay: #262d35; --line: #333c47;
+  --ink: #e7eaee; --muted: #98a2ad; --mark: #f5c22e; --mark-ink: #14181d;
+  --tag: #2e3640; --danger: #ef6b5b;
+  --sheet: #1e242b; --shadow: rgba(0, 0, 0, .5); color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--floor);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 15px;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input { font: inherit; color: inherit; }
+.wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 16px 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Kopf */
+.top h1 {
+  margin: 0;
+  font-family: var(--f-sign);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.top p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.notice {
+  font-size: 13px; color: var(--muted);
+  border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px;
+}
+
+/* Suche und Modellfilter */
+.finder { display: flex; flex-direction: column; gap: 8px; }
+.search {
+  display: flex; align-items: center; gap: 8px;
+  height: 44px; padding-inline: 12px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--rack);
+}
+.search:focus-within { outline: 2px solid var(--mark); outline-offset: 1px; }
+.search svg { flex: 0 0 auto; color: var(--muted); }
+.search input {
+  flex: 1; min-width: 0; height: 100%;
+  border: 0; background: transparent; outline: none; font-size: 16px;
+}
+.search .clear {
+  border: 0; background: transparent; color: var(--muted);
+  width: 32px; height: 32px; cursor: pointer; font-size: 18px;
+}
+.label {
+  font-size: 11px; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  height: 36px; min-width: 52px; padding-inline: 10px;
+  border: 1px solid var(--line); border-radius: 18px; background: var(--rack);
+  font-family: var(--f-sign); font-weight: 700; font-size: 18px;
+  font-variant-numeric: tabular-nums; cursor: pointer;
+}
+.chip[aria-pressed="true"] { background: var(--mark); color: var(--mark-ink); border-color: var(--mark); }
+.chip.add { font-family: var(--f-body); font-weight: 600; font-size: 14px; color: var(--muted); border-style: dashed; }
+.chip:focus-visible, .btn:focus-visible, .g:focus-visible, .icon-btn:focus-visible, .hit:focus-visible {
+  outline: 2px solid var(--mark); outline-offset: 2px;
+}
+.newmodel { display: flex; gap: 6px; }
+.newmodel input {
+  width: 120px; height: 36px; padding-inline: 10px;
+  border: 1px solid var(--line); border-radius: 18px; background: var(--rack);
+  font-family: var(--f-sign); font-weight: 700; font-size: 18px;
+}
+.results { display: flex; flex-direction: column; gap: 4px; }
+.results .none { font-size: 14px; color: var(--muted); }
+.hit {
+  display: flex; align-items: center; gap: 10px; text-align: left;
+  min-height: 40px; padding: 6px 10px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--rack); cursor: pointer;
+}
+.hit b {
+  flex: 0 0 auto; min-width: 34px; text-align: center; border-radius: 4px; padding: 2px 4px;
+  background: var(--mark); color: var(--mark-ink);
+  font-family: var(--f-sign); font-size: 18px; font-variant-numeric: tabular-nums;
+}
+.hit span { min-width: 0; font-size: 14px; overflow-wrap: anywhere; }
+
+/* Hallen-Enden */
+.end {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--f-sign); font-weight: 600; font-size: 14px;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+}
+.end::before, .end::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.end .door {
+  color: var(--mark-ink); background: var(--mark);
+  padding: 2px 10px; border-radius: 3px; letter-spacing: .12em;
+}
+
+/* Hallenboden */
+.floor {
+  display: grid;
+  grid-template-columns: 1fr 36px 1fr;
+  grid-template-rows: auto 1fr;
+  column-gap: 6px;
+  row-gap: 6px;
+}
+.side-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.side-label.r { text-align: right; grid-column: 3; }
+.side { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+/* Links beginnt hinten: 20 liegt auf Höhe von 19, vorne links bleibt frei */
+.side.left { grid-column: 1; grid-row: 2; justify-content: flex-end; }
+.side.right { grid-column: 3; grid-row: 2; }
+
+/* Gasse */
+.g {
+  flex: 0 0 auto;
+  min-height: 46px;
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--rack);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color .12s, transform .12s, opacity .12s;
+}
+.side.left .g { flex-direction: row-reverse; }
+.g .plate {
+  flex: 0 0 38px;
+  display: grid; place-items: center;
+  font-family: var(--f-sign); font-weight: 700; font-size: 20px;
+  font-variant-numeric: tabular-nums;
+  border-right: 1px solid var(--line);
+}
+.side.left .g .plate { border-right: 0; border-left: 1px solid var(--line); }
+.g .bays {
+  flex: 1; min-width: 0;
+  background-image: repeating-linear-gradient(90deg, transparent 0 22px, var(--rack-bay) 22px 24px);
+  display: flex; flex-direction: column; justify-content: center; gap: 3px;
+  padding: 4px 5px;
+}
+.g .t {
+  display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-align: left; line-height: 16px;
+  background: var(--tag); padding: 0 5px; border-radius: 4px;
+}
+.g .t b { font-family: var(--f-sign); font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; margin-right: 5px; }
+.g .t .ch { font-size: 12px; font-weight: 500; }
+.g .t .ch:not(:last-child)::after { content: ", "; }
+.g .t .ch.none { color: var(--muted); font-style: italic; }
+.g .t.more { background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; }
+/* Gassen liegen direkt aneinander (gemeinsame Kante) */
+.side > .g:not(.half) { border-radius: 0; }
+.side > .g:first-child { border-radius: 6px 6px 0 0; }
+.side > .g:last-child { border-radius: 0 0 6px 6px; }
+.seam + .g { margin-top: -1px; }
+.g:not(.half) { height: 44px; min-height: 0; }
+.g:not(.half) .bays { overflow: hidden; padding: 0 5px; gap: 4px; flex-direction: row; align-items: center; justify-content: flex-start; }
+.g:not(.half) .t { flex: 0 1 auto; min-width: 0; }
+.g .t.more { flex: 0 0 auto; padding: 0 1px; }
+.g[aria-pressed="true"]:not(.half), .g.match:not(.half) { position: relative; z-index: 1; }
+
+/* Zwischenplatz: sitzt genau auf der Grenze zweier Gassen */
+.seam { position: relative; flex: 0 0 0; height: 0; z-index: 3; }
+.g.half {
+  position: absolute; top: 0; transform: translateY(-50%);
+  min-height: 0; margin: 0;
+}
+.g.half:active { transform: translateY(-50%) scale(.97); }
+.g.half .plate {
+  flex: 0 0 auto; border: 0 !important; padding-inline: 5px;
+  font-size: 11px; font-weight: 600; letter-spacing: .02em; color: var(--muted);
+}
+.g.half.free {
+  width: 16px; height: 16px; border-radius: 50%;
+  display: grid; place-items: center;
+  border: 1px dashed var(--muted); background: var(--floor);
+}
+.side.right .g.half.free { right: 6px; }
+.side.left .g.half.free { left: 6px; }
+.g.half.free::before { content: ""; position: absolute; inset: -6px -10px; }
+.g.half.free::after { content: "+"; font-size: 13px; line-height: 1; font-weight: 600; color: var(--muted); }
+.g.half.free > * { display: none; }
+.g.half:not(.free) {
+  left: 4px; right: 4px; height: 18px; min-height: 0; border-radius: 5px; overflow: hidden;
+  border: 1.5px dashed var(--ink); background: var(--rack);
+  box-shadow: 0 2px 6px var(--shadow);
+}
+.g.half:not(.free) .plate { color: var(--ink); }
+.g.half.match { border-color: var(--mark); }
+.g.half[aria-pressed="true"] { border-color: var(--mark); box-shadow: 0 0 0 2px var(--mark); }
+.g.half:not(.free) .bays {
+  background-image: none; flex-direction: row; flex-wrap: nowrap; align-items: center;
+  justify-content: flex-start; gap: 4px; padding: 0 4px; overflow: hidden;
+}
+.g.half:not(.free) .t { flex: 0 1 auto; min-width: 0; line-height: 13px; }
+.g.half:not(.free) .t b { font-size: 12px; }
+.g.half:not(.free) .t .ch { font-size: 10.5px; }
+.g.half:not(.free) .plate { font-size: 10px; padding-inline: 4px; }
+.g.half:not(.free) .t.more { flex: 0 0 auto; padding: 0 2px; }
+.g:active { transform: scale(.985); }
+.g[aria-pressed="true"] { border-color: var(--mark); box-shadow: 0 0 0 2px var(--mark); }
+.g[aria-pressed="true"] .plate { background: var(--mark); color: var(--mark-ink); }
+.floor.filtering .g:not(.match) { opacity: .35; }
+.g.match { border-color: var(--mark); }
+.g.match .t.hl { box-shadow: inset 0 0 0 2px var(--mark); }
+.g .t .ch.hl { background: var(--mark); color: var(--mark-ink); border-radius: 2px; padding-inline: 2px; }
+
+/* Hauptgang */
+.corridor {
+  grid-column: 2; grid-row: 1 / span 2;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-inline: 2px solid var(--mark);
+  padding-block: 8px;
+}
+.corridor::before {
+  content: ""; position: absolute; left: 50%; top: 8px; bottom: 8px;
+  border-left: 2px dashed var(--line); transform: translateX(-1px);
+}
+.lane { display: flex; flex-direction: column; justify-content: space-around; align-items: center; }
+.lane svg { width: 12px; height: 12px; color: var(--muted); }
+.corridor .name {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  white-space: nowrap;
+  font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--muted); background: var(--floor); padding: 2px 8px;
+}
+.hint { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+/* Bottom-Sheet */
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  z-index: 10;
+  max-height: 80vh; max-height: 80dvh;
+  display: flex; flex-direction: column;
+  background: var(--sheet);
+  border-top: 1px solid var(--line);
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -8px 30px var(--shadow);
+  animation: up .18s ease-out;
+}
+@keyframes up { from { transform: translateY(24px); opacity: .6; } }
+.sheet-in {
+  width: 100%; max-width: 560px; margin: 0 auto; min-height: 0;
+  display: flex; flex-direction: column;
+}
+.sheet-head { display: flex; align-items: center; gap: 14px; padding: 14px 16px 10px; }
+.sheet-num {
+  flex: 0 0 auto; min-width: 60px; height: 60px; padding-inline: 8px;
+  display: grid; place-items: center; border-radius: 8px;
+  background: var(--mark); color: var(--mark-ink);
+  font-family: var(--f-sign); font-weight: 700; font-size: 38px;
+  font-variant-numeric: tabular-nums;
+}
+.sheet-title { flex: 1; min-width: 0; }
+.sheet-title h2 {
+  margin: 2px 0 0; font-family: var(--f-sign); font-weight: 600;
+  font-size: 22px; line-height: 1.1; text-wrap: balance;
+}
+.icon-btn {
+  flex: 0 0 auto; width: 40px; height: 40px; border-radius: 20px;
+  border: 1px solid var(--line); background: transparent;
+  display: grid; place-items: center; cursor: pointer;
+}
+.sheet-body {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 0 16px 12px; display: flex; flex-direction: column; gap: 10px;
+}
+.sheet-foot {
+  padding: 10px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.empty {
+  border: 1px dashed var(--line); border-radius: 8px;
+  padding: 12px; color: var(--muted); font-size: 14px; line-height: 1.45;
+}
+.model {
+  border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.model-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.model-head .nr { font-family: var(--f-sign); font-weight: 700; font-size: 26px; line-height: 1; font-variant-numeric: tabular-nums; }
+.model-head .nr small { font-family: var(--f-body); font-weight: 600; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.linkbtn {
+  border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  font-size: 13px; font-weight: 600; padding: 6px 4px;
+}
+.linkbtn.armed { color: var(--danger); }
+.chargen { display: flex; flex-wrap: wrap; gap: 6px; }
+.charge {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 32px; padding: 4px 10px; border-radius: 6px;
+  border: 1px solid var(--line); background: var(--floor);
+  font-size: 14px; font-weight: 500; cursor: pointer; overflow-wrap: anywhere; text-align: left;
+}
+.charge.armed { border-color: var(--danger); color: var(--danger); }
+.chargen .none { font-size: 13px; color: var(--muted); }
+.addrow { display: flex; gap: 6px; }
+.addrow input {
+  flex: 1; min-width: 0; height: 40px; padding-inline: 10px;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--rack); font-size: 16px;
+}
+.addrow input:focus { outline: 2px solid var(--mark); outline-offset: 1px; }
+.btn {
+  height: 40px; padding-inline: 14px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--floor);
+  font-weight: 600; font-size: 15px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn.primary { background: var(--mark); color: var(--mark-ink); border-color: var(--mark); }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn b { font-family: var(--f-sign); font-size: 19px; font-variant-numeric: tabular-nums; }
+.place { display: flex; flex-direction: column; gap: 6px; }
+
+.toast {
+  position: fixed; left: 50%; top: calc(12px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
+  z-index: 20; max-width: calc(100% - 32px);
+  background: var(--ink); color: var(--floor); padding: 8px 14px; border-radius: 8px; font-size: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet { animation: none; }
+  .g { transition: none; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Gassenplan</h1>
+    <p>Tippe auf eine Gasse, um Modelle und Chargen einzutragen.</p>
+  </header>
+
+  <div class="notice" id="notice" hidden></div>
+
+  <section class="finder">
+    <label class="search" for="q">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M12.5 12.5L16 16"/></svg>
+      <input id="q" type="search" placeholder="Modell oder Charge suchen" autocomplete="off" enterkeyhint="search">
+      <button class="clear" id="q-clear" type="button" aria-label="Suche leeren" hidden>×</button>
+    </label>
+    <div class="label">Modelle</div>
+    <div class="chips" id="model-chips"><span class="label" style="text-transform:none;letter-spacing:0">Modelle werden geladen …</span></div>
+    <div class="results" id="results" hidden></div>
+  </section>
+
+  <div class="end end-front">Vorne</div>
+
+  <div class="floor" id="floor">
+    <div class="side-label">Links · 31–20</div>
+    <div class="corridor" aria-hidden="true">
+      <div class="lane" id="lane-l"></div>
+      <div class="lane" id="lane-r"></div>
+      <span class="name">Hauptgang</span>
+    </div>
+    <div class="side-label r">Rechts · 1–19</div>
+    <div class="side left" id="left" role="group" aria-label="Linke Seite"></div>
+    <div class="side right" id="right" role="group" aria-label="Rechte Seite"></div>
+  </div>
+
+  <div class="end end-back"><span class="door">Hinten · Eingang</span></div>
+
+  <p class="hint">Gezählt wird rechts von vorne nach hinten (1–19), dann links von hinten zurück nach vorne (20–31). Die Pfeile im Hauptgang zeigen die Richtung. Steht eine Gitterbox mittig auf zwei Gassen, tippe auf das kleine + auf der Grenze zwischen ihnen.</p>
+</div>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-labelledby="sheet-h">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <div class="sheet-num" id="sheet-num">1</div>
+      <div class="sheet-title">
+        <div class="label" id="sheet-eyebrow">Rechte Seite</div>
+        <h2 id="sheet-h">Gasse 1</h2>
+      </div>
+      <button class="icon-btn" id="close" type="button" aria-label="Schließen">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
+      </button>
+    </div>
+    <div class="sheet-body" id="sheet-body"></div>
+    <div class="sheet-foot">
+      <button class="btn" id="prev" type="button">‹ Gasse <b id="prev-n"></b></button>
+      <button class="btn" id="next" type="button">Gasse <b id="next-n"></b> ›</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(() => {
+  const TOTAL = 31, RIGHT_END = 19;
+  const $ = id => document.getElementById(id);
+  const buttons = {};
+
+  const state = {
+    db: null,
+    canWrite: false,
+    loaded: false,
+    models: [],        // [{nr, pos}]
+    placements: [],    // [{id, gasse, modell, chargen: []}]
+    current: null,
+    filterModel: null,
+    query: '',
+    addingModel: false,
+    armed: null,       // Schlüssel des Elements, das auf die zweite Bestätigung wartet
+  };
+
+  function el(tag, attrs, ...kids) {
+    const n = document.createElement(tag);
+    for (const k in attrs || {}) {
+      const v = attrs[k];
+      if (k === 'class') n.className = v;
+      else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+      else if (v === true) n.setAttribute(k, '');
+      else if (v !== false && v != null) n.setAttribute(k, v);
+    }
+    for (const c of kids.flat()) if (c != null && c !== false) n.append(c);
+    return n;
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+  }
+
+  // Plätze: ganze Zahlen sind Gassen, x.5 ist der Zwischenplatz zwischen x und x+1 (nur auf derselben Seite)
+  const SEQ = [];
+  for (let n = 1; n <= TOTAL; n++) {
+    SEQ.push(n);
+    if (n < TOTAL && n !== RIGHT_END) SEQ.push(n + 0.5);
+  }
+  const isHalf = n => n % 1 !== 0;
+  const validG = g => SEQ.includes(g);
+  const label = n => isHalf(n) ? (n - 0.5) + '/' + (n + 0.5) : String(n);
+  const placeName = n => isHalf(n) ? 'zwischen Gasse ' + (n - 0.5) + ' und ' + (n + 0.5) : 'in Gasse ' + n;
+  const sideOf = n => n <= RIGHT_END ? 'rechts' : 'links';
+  const fromFront = n => n <= RIGHT_END ? n : TOTAL + 1 - n;
+  const sideCount = n => n <= RIGHT_END ? RIGHT_END : TOTAL - RIGHT_END;
+  const modelPos = nr => { const m = state.models.find(x => x.nr === nr); return m ? m.pos : 9999; };
+  const placementsIn = n => state.placements
+    .filter(p => p.gasse === n)
+    .sort((a, b) => modelPos(a.modell) - modelPos(b.modell) || a.modell.localeCompare(b.modell));
+
+  // ---------- Plan ----------
+  function makeAisle(n) {
+    const b = el('button', { type: 'button', class: 'g' + (isHalf(n) ? ' half free' : ''), 'aria-pressed': 'false' },
+      el('span', { class: 'plate' }, label(n)),
+      el('span', { class: 'bays' }));
+    b.addEventListener('click', () => state.current === n ? close() : open(n));
+    buttons[n] = b;
+    return b;
+  }
+  // Rechts: 1 oben (vorne) bis 19 unten (hinten), links: 31 oben (vorne) bis 20 unten (hinten)
+  const place = n => isHalf(n) ? el('div', { class: 'seam' }, makeAisle(n)) : makeAisle(n);
+  // Eine Datei kann den Plan schon fertig gezeichnet enthalten (für Vorschauen ohne Skript): neu aufbauen
+  $('right').replaceChildren();
+  $('left').replaceChildren();
+  SEQ.filter(n => n <= RIGHT_END).forEach(n => $('right').append(place(n)));
+  SEQ.filter(n => n > RIGHT_END).reverse().forEach(n => $('left').append(place(n)));
+
+
+  const chev = d => '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="' + d + '"/></svg>';
+  $('lane-l').innerHTML = chev('M3 9l4-4 4 4').repeat(7);   // links: nach vorne (oben)
+  $('lane-r').innerHTML = chev('M3 5l4 4 4-4').repeat(7);   // rechts: nach hinten (unten)
+
+  function matches() {
+    const q = state.query.trim().toLowerCase();
+    if (state.filterModel) return state.placements.filter(p => p.modell === state.filterModel);
+    if (!q) return null;
+    return state.placements.filter(p =>
+      p.modell.toLowerCase().includes(q) || (p.chargen || []).some(c => c.toLowerCase().includes(q)));
+  }
+
+  function renderPlan() {
+    const hits = matches();
+    const hitG = new Set((hits || []).map(p => p.gasse));
+    const hitM = new Set((hits || []).map(p => p.id));
+    const q = state.filterModel ? '' : state.query.trim().toLowerCase();
+    $('floor').classList.toggle('filtering', !!hits);
+    for (const n of SEQ) {
+      const b = buttons[n];
+      const ps = placementsIn(n);
+      if (isHalf(n)) b.classList.toggle('free', !ps.length);
+      const bays = b.querySelector('.bays');
+      bays.replaceChildren();
+      const shown = ps.slice(0, 1);
+      for (const p of shown) {
+        const ch = p.chargen || [];
+        bays.append(el('span', { class: 't' + (hitM.has(p.id) ? ' hl' : '') },
+          el('b', {}, p.modell),
+          ch.length
+            ? ch.map(c => el('span', { class: 'ch' + (q && c.toLowerCase().includes(q) ? ' hl' : '') }, c))
+            : el('span', { class: 'ch none' }, 'ohne Charge')));
+      }
+      if (ps.length > shown.length) bays.append(el('span', { class: 't more' }, '+' + (ps.length - shown.length)));
+      b.classList.toggle('match', hitG.has(n));
+      b.setAttribute('aria-pressed', String(state.current === n));
+      b.setAttribute('aria-label', (isHalf(n) ? 'Zwischen Gasse ' + (n - 0.5) + ' und ' + (n + 0.5) : 'Gasse ' + n) + (ps.length
+        ? ', ' + ps.map(p => 'Modell ' + p.modell + ((p.chargen || []).length ? ' Charge ' + p.chargen.join(', ') : ' ohne Charge')).join('; ')
+        : ', leer'));
+    }
+  }
+
+  // ---------- Suche und Modellfilter ----------
+  function renderFinder() {
+    const chips = $('model-chips');
+    const prevInp = $('new-model');
+    const draft = prevInp ? prevInp.value : '';
+    const hadFocus = prevInp && document.activeElement === prevInp;
+    chips.replaceChildren();
+    if (!state.db) {
+      chips.append(el('span', { class: 'results none' }, state.loaded ? 'Keine Daten verfügbar.' : 'Modelle werden geladen …'));
+    } else {
+      if (!state.models.length) chips.append(el('span', { class: 'results none' }, 'Noch keine Modelle angelegt.'));
+      for (const m of state.models) {
+        chips.append(el('button', {
+          type: 'button', class: 'chip', 'aria-pressed': String(state.filterModel === m.nr),
+          onclick: () => {
+            state.filterModel = state.filterModel === m.nr ? null : m.nr;
+            state.query = ''; $('q').value = ''; $('q-clear').hidden = true;
+            render();
+          },
+        }, m.nr));
+      }
+      if (state.canWrite) {
+        if (state.addingModel) {
+          const inp = el('input', { id: 'new-model', type: 'text', inputmode: 'numeric', placeholder: 'Nr.', 'aria-label': 'Neue Modellnummer', autocomplete: 'off' });
+          const form = el('form', { class: 'newmodel', onsubmit: e => { e.preventDefault(); addModel(inp.value); } },
+            inp, el('button', { type: 'submit', class: 'chip add' }, 'Anlegen'),
+            el('button', { type: 'button', class: 'chip add', onclick: () => { state.addingModel = false; renderFinder(); } }, 'Abbrechen'));
+          inp.value = draft;
+          chips.append(form);
+          if (!prevInp || hadFocus) setTimeout(() => inp.focus(), 0);
+        } else {
+          chips.append(el('button', { type: 'button', class: 'chip add', onclick: () => { state.addingModel = true; renderFinder(); } }, '+ Modell'));
+        }
+      }
+    }
+
+    const res = $('results');
+    const hits = matches();
+    res.replaceChildren();
+    res.hidden = !hits;
+    if (!hits) return;
+    if (!hits.length) {
+      res.append(el('div', { class: 'none' }, state.filterModel
+        ? 'Modell ' + state.filterModel + ' liegt noch in keiner Gasse.'
+        : 'Nichts gefunden für „' + state.query.trim() + '“.'));
+      return;
+    }
+    const q = state.query.trim().toLowerCase();
+    hits.slice().sort((a, b) => a.gasse - b.gasse).forEach(p => {
+      const ch = (p.chargen || []);
+      const matchCh = q ? ch.filter(c => c.toLowerCase().includes(q)) : ch;
+      const detail = 'Modell ' + p.modell + (matchCh.length ? ' · Charge ' + matchCh.join(', ') : '');
+      res.append(el('button', { type: 'button', class: 'hit', onclick: () => open(p.gasse) },
+        el('b', {}, label(p.gasse)), el('span', {}, (isHalf(p.gasse) ? 'Mittig · ' : '') + detail)));
+    });
+  }
+
+  $('q').addEventListener('input', () => {
+    state.query = $('q').value;
+    state.filterModel = null;
+    $('q-clear').hidden = !state.query;
+    render();
+  });
+  $('q-clear').addEventListener('click', () => {
+    state.query = ''; $('q').value = ''; $('q-clear').hidden = true; render();
+  });
+
+  // ---------- Sheet ----------
+  function open(n) {
+    if (state.current !== n) state.armed = null;
+    state.current = n;
+    $('sheet').hidden = false;
+    render();
+    buttons[n].scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+  function close() {
+    state.current = null; state.armed = null;
+    $('sheet').hidden = true;
+    render();
+  }
+
+  function renderSheet() {
+    const n = state.current;
+    if (!n) return;
+    const pos = fromFront(n), cnt = sideCount(n);
+    let where = pos + '. von vorne';
+    if (isHalf(n)) where = 'mittig auf beiden Gassen';
+    else if (pos === 1) where = 'ganz vorne';
+    else if (pos === cnt) where = 'ganz hinten';
+    $('sheet-num').textContent = label(n);
+    $('sheet-h').textContent = isHalf(n) ? 'Zwischen Gasse ' + (n - 0.5) + ' und ' + (n + 0.5) : 'Gasse ' + n;
+    $('sheet-eyebrow').textContent = (sideOf(n) === 'rechts' ? 'Rechte Seite' : 'Linke Seite') + ' · ' + where;
+    const i = SEQ.indexOf(n);
+    $('prev').disabled = i <= 0;
+    $('next').disabled = i >= SEQ.length - 1;
+    $('prev-n').textContent = i > 0 ? label(SEQ[i - 1]) : '';
+    $('next-n').textContent = i < SEQ.length - 1 ? label(SEQ[i + 1]) : '';
+
+    const body = $('sheet-body');
+    const focusedId = document.activeElement && document.activeElement.id;
+    const drafts = {};
+    body.querySelectorAll('input').forEach(i => { drafts[i.id] = i.value; });
+    body.replaceChildren();
+
+    if (!state.db) {
+      body.append(el('div', { class: 'empty' }, 'Modelle und Chargen können gerade nicht geladen werden.'));
+      return;
+    }
+
+    const ps = placementsIn(n);
+    if (!ps.length) body.append(el('div', { class: 'empty' }, isHalf(n)
+      ? 'Hier steht noch nichts. Trage ein Modell ein, wenn eine Gitterbox mittig auf Gasse ' + (n - 0.5) + ' und ' + (n + 0.5) + ' steht.'
+      : 'In dieser Gasse ist noch kein Modell eingetragen.'));
+
+    for (const p of ps) {
+      const rmKey = 'rm:' + p.id;
+      const card = el('div', { class: 'model' },
+        el('div', { class: 'model-head' },
+          el('div', { class: 'nr' }, el('small', {}, 'Modell'), p.modell),
+          state.canWrite && el('button', {
+            type: 'button', class: 'linkbtn' + (state.armed === rmKey ? ' armed' : ''),
+            onclick: () => state.armed === rmKey ? removePlacement(p) : arm(rmKey),
+          }, state.armed === rmKey ? 'Wirklich entfernen?' : 'Aus Gasse entfernen')));
+
+      const list = el('div', { class: 'chargen' });
+      const ch = p.chargen || [];
+      if (!ch.length) list.append(el('span', { class: 'none' }, 'Noch keine Charge eingetragen.'));
+      ch.forEach(c => {
+        const key = 'ch:' + p.id + ':' + c;
+        list.append(state.canWrite
+          ? el('button', {
+              type: 'button', class: 'charge' + (state.armed === key ? ' armed' : ''),
+              'aria-label': state.armed === key ? 'Charge ' + c + ' löschen' : 'Charge ' + c,
+              onclick: () => state.armed === key ? removeCharge(p, c) : arm(key),
+            }, c, state.armed === key ? ' · löschen?' : '')
+          : el('span', { class: 'charge' }, c));
+      });
+      card.append(list);
+
+      if (state.canWrite) {
+        const inpId = 'charge-' + p.id;
+        const inp = el('input', { id: inpId, type: 'text', placeholder: 'Charge eintragen', autocomplete: 'off', enterkeyhint: 'done', 'aria-label': 'Charge für Modell ' + p.modell });
+        if (drafts[inpId]) inp.value = drafts[inpId];
+        card.append(el('form', { class: 'addrow', onsubmit: e => { e.preventDefault(); addCharge(p, inp.value, inpId); } },
+          inp, el('button', { type: 'submit', class: 'btn primary' }, 'Eintragen')));
+      }
+      body.append(card);
+    }
+
+    if (state.canWrite) {
+      const here = new Set(ps.map(p => p.modell));
+      const free = state.models.filter(m => !here.has(m.nr));
+      if (free.length) {
+        body.append(el('div', { class: 'place' },
+          el('div', { class: 'label' }, 'Modell ' + placeName(n) + ' stellen'),
+          el('div', { class: 'chips' }, free.map(m =>
+            el('button', { type: 'button', class: 'chip', onclick: () => addPlacement(n, m.nr) }, '+ ' + m.nr)))));
+      }
+    }
+
+    if (focusedId) { const f = $(focusedId); if (f) f.focus(); }
+  }
+
+  function arm(key) { state.armed = key; renderSheet(); }
+
+  $('close').addEventListener('click', close);
+  const step = d => { const i = SEQ.indexOf(state.current) + d; if (i >= 0 && i < SEQ.length) open(SEQ[i]); };
+  $('prev').addEventListener('click', () => step(-1));
+  $('next').addEventListener('click', () => step(1));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.current) close(); });
+
+  function render() { renderPlan(); renderFinder(); renderSheet(); }
+
+  // ---------- Schreiben ----------
+  function fail(e) {
+    if (e && e.code === 'invalid_argument') { state.canWrite = false; render(); toast('Du kannst hier nur lesen.'); }
+    else if (e && e.code === 'quota_exceeded') toast('Speicher ist voll. Bitte alte Einträge löschen.');
+    else toast('Speichern hat nicht geklappt. Bitte nochmal versuchen.');
+  }
+  const pid = (g, nr) => 'g' + g + '_' + nr;
+
+  async function addModel(raw) {
+    const nr = String(raw || '').trim();
+    if (!/^[A-Za-z0-9._-]{1,20}$/.test(nr)) { toast('Bitte eine Modellnummer ohne Leerzeichen eingeben.'); return; }
+    if (state.models.some(m => m.nr === nr)) { toast('Modell ' + nr + ' gibt es schon.'); return; }
+    const pos = state.models.reduce((a, m) => Math.max(a, m.pos || 0), 0) + 1;
+    try {
+      await state.db.collection('models').doc(nr).set({ nr, pos });
+      state.addingModel = false;
+      toast('Modell ' + nr + ' angelegt.');
+    } catch (e) { fail(e); }
+  }
+  async function addPlacement(g, nr) {
+    try {
+      await state.db.collection('belegung').doc(pid(g, nr)).set({ gasse: g, modell: nr, chargen: [], ts: Date.now() });
+    } catch (e) { fail(e); }
+  }
+  async function removePlacement(p) {
+    state.armed = null;
+    try { await state.db.collection('belegung').doc(p.id).delete(); toast('Modell ' + p.modell + ' ' + placeName(p.gasse) + ' entfernt.'); }
+    catch (e) { fail(e); }
+  }
+  async function addCharge(p, raw, inpId) {
+    const c = String(raw || '').trim();
+    if (!c) return;
+    const ch = (p.chargen || []).slice();
+    if (ch.includes(c)) { toast('Charge ' + c + ' ist schon eingetragen.'); return; }
+    ch.push(c);
+    try {
+      await state.db.collection('belegung').doc(p.id).update({ chargen: ch, ts: Date.now() });
+      const i = $(inpId); if (i) { i.value = ''; i.focus(); }
+    } catch (e) { fail(e); }
+  }
+  async function removeCharge(p, c) {
+    state.armed = null;
+    const ch = (p.chargen || []).filter(x => x !== c);
+    try { await state.db.collection('belegung').doc(p.id).update({ chargen: ch, ts: Date.now() }); }
+    catch (e) { fail(e); }
+  }
+
+  // ---------- Daten laden ----------
+  render();
+  (async () => {
+    const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
+    state.loaded = true;
+    if (!db) {
+      $('notice').textContent = 'Modelle und Chargen sind in dieser Ansicht nicht verfügbar. Öffne die Seite angemeldet in Claude.';
+      $('notice').hidden = false;
+      render();
+      return;
+    }
+    state.db = db;
+    state.canWrite = true;
+    try {
+      const user = await window.claude.use('user');
+      if (user && user.can) {
+        const w = await user.can('data.write');
+        if (w === false) state.canWrite = false;
+      }
+    } catch (_) {}
+
+    const onErr = () => {
+      $('notice').textContent = 'Die Verbindung zu den gespeicherten Daten ist abgebrochen. Lade die Seite neu.';
+      $('notice').hidden = false;
+    };
+    db.collection('models').onSnapshot(snap => {
+      state.models = snap.docs.map(d => {
+        const v = d.data() || {};
+        return { nr: String(v.nr || d.id), pos: typeof v.pos === 'number' ? v.pos : 9999 };
+      }).sort((a, b) => a.pos - b.pos || a.nr.localeCompare(b.nr));
+      render();
+    }, onErr);
+    db.collection('belegung').onSnapshot(snap => {
+      state.placements = snap.docs.map(d => {
+        const v = d.data() || {};
+        return { id: d.id, gasse: Number(v.gasse), modell: String(v.modell || ''), chargen: Array.isArray(v.chargen) ? v.chargen.map(String) : [] };
+      }).filter(p => validG(p.gasse) && p.modell);
+      render();
+    }, onErr);
+  })();
+})();
+</script>

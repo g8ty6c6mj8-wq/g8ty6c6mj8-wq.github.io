@@ -1,0 +1,26 @@
+const { chromium } = require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright');
+(async () => {
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const page = await (await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })).newPage();
+  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  await page.goto('file://' + process.cwd() + '/site/index.html');
+  const heights = () => page.evaluate(() => [...new Set([...document.querySelectorAll('.g:not(.half)')].map(b => Math.round(b.getBoundingClientRect().height)))]);
+  console.log('Höhen vorher:', await heights());
+  const open = async name => { await page.getByRole('button', { name }).first().click(); };
+  const add = async (m, c) => { await page.getByRole('button', { name: '+ ' + m }).click(); if (c) { await page.locator('.model', { hasText: m }).locator('input').fill(c); await page.locator('.model', { hasText: m }).getByRole('button', { name: 'Eintragen' }).click(); } };
+  await open(/^Zwischen Gasse 4 und 5/); await add('091', '11870'); await add('092', '11902'); await page.click('#close');
+  await open(/^Gasse 4,/); await add('854', 'A55, A56'); await add('855', '7781'); await page.click('#close');
+  await open(/^Gasse 5,/); await add('793', 'C-777'); await page.click('#close');
+  await open(/^Gasse 6,/); await add('854', '1'); await add('855', '2'); await add('588', '3'); await page.click('#close');
+  await open(/^Zwischen Gasse 26 und 27/); await add('855', '30311'); await page.click('#close');
+  console.log('Höhen nachher:', await heights());
+  const pos = await page.evaluate(() => { const r = s => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.top), Math.round(b.bottom)]; };
+    const g = t => [...document.querySelectorAll('.g:not(.half)')].find(x => x.querySelector('.plate').textContent === t).getBoundingClientRect();
+    const h = [...document.querySelectorAll('.g.half')].find(x => x.querySelector('.plate').textContent === '4/5').getBoundingClientRect();
+    return { g4bottom: Math.round(g('4').bottom), seamMid: Math.round((h.top + h.bottom) / 2), seamH: Math.round(h.height) }; });
+  console.log('Lage 4/5:', JSON.stringify(pos));
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.locator('#floor').screenshot({ path: 'even-shot.png', clip: undefined });
+  console.log('Fehler:', errs);
+  await browser.close();
+})();
