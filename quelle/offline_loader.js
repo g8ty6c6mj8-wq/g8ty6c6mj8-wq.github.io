@@ -229,26 +229,28 @@
     if (!on) {
       long = 'Nicht verbunden. Jedes Handy hat seinen eigenen Stand.';
     } else if (sync.busy) {
-      long = short = 'Wird abgeglichen …';
+      long = 'Wird abgeglichen …'; short = 'Abgleich …';
     } else if (offline) {
       long = 'Kein Internet. ' + (waiting ? 'Deine Änderungen sind gespeichert und werden übertragen, sobald wieder Netz da ist.' : 'Sobald wieder Netz da ist, wird abgeglichen.');
-      short = waiting ? 'Kein Internet · Änderungen warten' : 'Kein Internet';
+      short = waiting ? 'Offline · wartet' : 'Offline';
       bad = waiting;
     } else if (sync.error) {
       long = sync.error;
-      short = sync.authBad ? 'Gemeinsamer Speicher: Schlüssel prüfen' : 'Abgleich gestört · wird wiederholt';
+      short = sync.authBad ? 'Schlüssel prüfen' : 'Abgleich gestört';
       bad = true;
     } else if (sync.last) {
       long = 'Verbunden. Alle Handys mit diesem Schlüssel sehen denselben Stand. Zuletzt abgeglichen um ' + hhmm(sync.last) + ' Uhr.';
-      short = 'Gemeinsam · abgeglichen ' + hhmm(sync.last);
+      short = 'Live · ' + hhmm(sync.last);
     } else {
-      long = short = 'Verbunden.';
+      long = 'Verbunden.'; short = 'Live';
     }
     $('sync-status').textContent = long;
     const line = $('syncline');
     line.hidden = !on;
     line.textContent = short || '';
     line.classList.toggle('bad', bad);
+    line.classList.toggle('busy', !!sync.busy);
+    line.title = long;
   }
 
   $('sync-form').addEventListener('submit', async e => {
@@ -359,7 +361,7 @@
     floor.querySelectorAll('[aria-pressed="true"]').forEach(x => x.setAttribute('aria-pressed', 'false'));
     floor.querySelectorAll('.match, .hl').forEach(x => x.classList.remove('match', 'hl'));
     html = between(html, 'plan', floor.outerHTML);
-    const chips = el('div', { class: 'chips', id: 'model-chips' }, state.models.map(m => el('span', { class: 'chip' }, m.nr)));
+    const chips = el('div', { class: 'chips scroll', id: 'model-chips' }, state.models.map(m => el('span', { class: 'chip' }, m.nr)));
     html = between(html, 'chips', chips.outerHTML);
     html = between(html, 'stand', el('p', { id: 'stand' }, $('stand').textContent).outerHTML);
     return html;

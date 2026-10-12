@@ -30,47 +30,37 @@ link_start = src.index('<link rel="preconnect"')
 link_end = src.index("<style>")
 src = src[:link_start] + "<style>\n" + ff + "</style>\n" + src[link_end:]
 
-# 2. Bereich „Stand“ und gemeinsamer Speicher unter dem Plan
-src = must_replace(src, "zwischen ihnen.</p>\n</div>",
-"""zwischen ihnen.</p>
-
-  <section class="offline">
-    <div class="label">Stand</div>
-    <!--stand--><p id="stand">Stand wird geladen …</p><!--/stand-->
-    <div class="sync" id="sync" hidden>
-      <div class="label">Gemeinsamer Speicher</div>
-      <p id="sync-status">Nicht verbunden. Jedes Handy hat seinen eigenen Stand.</p>
-      <form class="addrow" id="sync-form">
-        <input id="sync-token" type="password" placeholder="Schlüssel github_pat_…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="GitHub-Schlüssel">
-        <button class="btn primary" type="submit">Verbinden</button>
-      </form>
-      <div class="row">
-        <button class="btn" id="sync-now" type="button" hidden>Jetzt abgleichen</button>
-        <button class="linkbtn" id="sync-off" type="button" hidden>Verbindung trennen</button>
-      </div>
-    </div>
-    <p class="hint" id="install-hint" hidden><b>App ohne Internet:</b> In Safari unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“. Danach startet der Gassenplan wie eine App, auch ohne Netz.</p>
-    <p class="hint">Ohne gemeinsamen Speicher bleiben die Einträge nur auf diesem Handy.</p>
-  </section>
-</div>""")
+# 2. Stand und gemeinsamer Speicher im Fenster „Einstellungen und Hilfe“
+src = must_replace(src, "<!--settings-->",
+"""<section class="offline">
+        <div class="label">Stand</div>
+        <!--stand--><p id="stand">Stand wird geladen …</p><!--/stand-->
+      </section>
+      <section class="sync" id="sync" hidden>
+        <div class="label">Gemeinsamer Speicher</div>
+        <p id="sync-status">Nicht verbunden. Jedes Handy hat seinen eigenen Stand.</p>
+        <form class="addrow" id="sync-form">
+          <input id="sync-token" type="password" placeholder="Schlüssel github_pat_…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="GitHub-Schlüssel">
+          <button class="btn primary" type="submit">Verbinden</button>
+        </form>
+        <div class="row">
+          <button class="btn" id="sync-now" type="button" hidden>Jetzt abgleichen</button>
+          <button class="linkbtn" id="sync-off" type="button" hidden>Verbindung trennen</button>
+        </div>
+        <p class="hint">Ohne gemeinsamen Speicher bleiben die Einträge nur auf diesem Handy.</p>
+      </section>
+      <p class="hint" id="install-hint" hidden><b>Als App auf dem Handy:</b> In Safari unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“. Danach startet der Gassenplan wie eine App, auch ohne Netz.</p>""")
 src = must_replace(src, "@media (prefers-reduced-motion: reduce) {",
-""".offline { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
-.offline p { margin: 0; }
-.offline #stand { font-size: 14px; }
-.notice .row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.sync { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
-.sync #sync-status { font-size: 14px; }
+""".offline, .sync { display: flex; flex-direction: column; gap: 8px; background: var(--surface-2); border-radius: 14px; padding: 12px; }
+.offline p, .sync p { margin: 0; }
+.offline #stand, .sync #sync-status { font-size: 14px; line-height: 1.45; }
 .sync .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.syncline { margin: 6px 0 0; font-size: 13px; font-weight: 600; color: var(--muted); }
-.syncline::before { content: "●"; margin-right: 6px; color: #2e9d57; }
-.syncline.bad::before { color: var(--danger); }
+.notice .row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 
 @media (prefers-reduced-motion: reduce) {""")
-src = must_replace(src, "<p>Tippe auf eine Gasse, um Modelle und Chargen einzutragen.</p>",
-                   "<p>Tippe auf eine Gasse, um Modelle und Chargen einzutragen. Läuft ohne Internet.</p>\n    <p class=\"syncline\" id=\"syncline\" hidden></p>")
 
 # 2b. Markierungen für die fertig gezeichnete Ansicht (Plan steht sofort da, noch bevor das Skript läuft)
-src = must_replace(src, '<div class="chips" id="model-chips">', '<!--chips--><div class="chips" id="model-chips">')
+src = must_replace(src, '<div class="chips scroll" id="model-chips">', '<!--chips--><div class="chips scroll" id="model-chips">')
 chips_end = src.index("</div>", src.index('<!--chips-->')) + len("</div>")
 src = src[:chips_end] + "<!--/chips-->" + src[chips_end:]
 src = must_replace(src, '  <div class="floor" id="floor">', '  <!--plan--><div class="floor" id="floor">')

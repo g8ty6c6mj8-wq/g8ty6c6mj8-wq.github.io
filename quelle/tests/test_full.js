@@ -14,10 +14,10 @@ const { chromium } = require(require('child_process').execSync('npm root -g').to
   put(3,'854',['27101','27102','27103','27104','27105','27106','27107','27108','27109','27110']); put(3,'855',['28001','28002']);
   put(3.5,'091',['11870','11871','11872']); put(3.5,'092',['11902']);
   await page.evaluate(b => { const k = 'gassenplan-offline-v1'; const m = JSON.parse(localStorage.getItem(k)); m.belegung = b; m.stamp = Date.now(); localStorage.setItem(k, JSON.stringify(m)); }, B);
-  await page.reload(); await page.evaluate(() => document.fonts.ready);
+  await page.reload(); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(1600);
   const r = await page.evaluate(() => {
     const rect = e => e.getBoundingClientRect();
-    const aisles = [...document.querySelectorAll('.side > .g')];
+    const aisles = [...document.querySelectorAll('.rack > .g')];
     const heights = [...new Set(aisles.map(a => Math.round(rect(a).height)))];
     let clipped = 0, outside = 0, overlap = 0;
     for (const t of document.querySelectorAll('.g .t')) { if (t.scrollWidth > t.clientWidth + 1 || t.scrollHeight > t.clientHeight + 1) clipped++; }
