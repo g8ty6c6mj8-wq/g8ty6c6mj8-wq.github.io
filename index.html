@@ -198,22 +198,22 @@ button, input { font: inherit; color: inherit; }
   padding: 4px 5px;
 }
 .g .t {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 1px 5px;
-  text-align: left; line-height: 1.15;
-  background: var(--tag); padding: 3px 5px; border-radius: 4px;
+  display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-align: left; line-height: 17px;
+  background: var(--tag); padding: 0 5px; border-radius: 4px;
 }
-.g .t b { font-family: var(--f-sign); font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
-.g .t .ch { font-size: 12px; font-weight: 500; overflow-wrap: anywhere; min-width: 0; }
-.g .t .ch:not(:last-child)::after { content: ","; }
+.g .t b { font-family: var(--f-sign); font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; margin-right: 5px; }
+.g .t .ch { font-size: 12px; font-weight: 500; }
+.g .t .ch:not(:last-child)::after { content: ", "; }
 .g .t .ch.none { color: var(--muted); font-style: italic; }
-.g .t.more { background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; padding-block: 0; }
+.g .t.more { background: transparent; color: var(--muted); font-size: 12px; font-weight: 600; }
 /* Gassen liegen direkt aneinander (gemeinsame Kante) */
 .side > .g:not(.half) { border-radius: 0; }
 .side > .g:first-child { border-radius: 6px 6px 0 0; }
 .side > .g:last-child { border-radius: 0 0 6px 6px; }
 .seam + .g { margin-top: -1px; }
-.g:not(.half) { min-height: calc(46px + var(--pt, 0px) + var(--pb, 0px)); }
-.g:not(.half) .bays { padding-top: calc(4px + var(--pt, 0px)); padding-bottom: calc(4px + var(--pb, 0px)); }
+.g:not(.half) { height: 66px; min-height: 0; }
+.g:not(.half) .bays { overflow: hidden; padding: 4px 5px; gap: 2px; }
 .g[aria-pressed="true"]:not(.half), .g.match:not(.half) { position: relative; z-index: 1; }
 
 /* Zwischenplatz: sitzt genau auf der Grenze zweier Gassen */
@@ -238,7 +238,7 @@ button, input { font: inherit; color: inherit; }
 .g.half.free::after { content: "+"; font-size: 14px; line-height: 1; font-weight: 600; color: var(--muted); }
 .g.half.free > * { display: none; }
 .g.half:not(.free) {
-  left: 4px; right: 4px; min-height: 28px; border-radius: 6px;
+  left: 4px; right: 4px; height: 24px; min-height: 0; border-radius: 6px; overflow: hidden;
   border: 1.5px dashed var(--ink); background: var(--rack);
   box-shadow: 0 2px 6px var(--shadow);
 }
@@ -246,9 +246,11 @@ button, input { font: inherit; color: inherit; }
 .g.half.match { border-color: var(--mark); }
 .g.half[aria-pressed="true"] { border-color: var(--mark); box-shadow: 0 0 0 2px var(--mark); }
 .g.half:not(.free) .bays {
-  background-image: none; flex-direction: row; flex-wrap: wrap; align-items: center;
-  justify-content: flex-start; padding: 3px 4px;
+  background-image: none; flex-direction: row; flex-wrap: nowrap; align-items: center;
+  justify-content: flex-start; gap: 4px; padding: 0 4px; overflow: hidden;
 }
+.g.half:not(.free) .t { flex: 0 1 auto; min-width: 0; }
+.g.half:not(.free) .t.more { flex: 0 0 auto; padding: 0 2px; }
 .g:active { transform: scale(.985); }
 .g[aria-pressed="true"] { border-color: var(--mark); box-shadow: 0 0 0 2px var(--mark); }
 .g[aria-pressed="true"] .plate { background: var(--mark); color: var(--mark-ink); }
@@ -558,16 +560,6 @@ button, input { font: inherit; color: inherit; }
   SEQ.filter(n => n <= RIGHT_END).forEach(n => $('right').append(place(n)));
   SEQ.filter(n => n > RIGHT_END).reverse().forEach(n => $('left').append(place(n)));
 
-  // Belegte Zwischenplätze: den Nachbargassen innen Platz geben, damit nichts verdeckt wird
-  function fitSeams() {
-    document.querySelectorAll('.seam').forEach(s => {
-      const b = s.firstElementChild;
-      const v = b.classList.contains('free') ? '' : Math.ceil(b.offsetHeight / 2 + 2) + 'px';
-      const above = s.previousElementSibling, below = s.nextElementSibling;
-      if (above) v ? above.style.setProperty('--pb', v) : above.style.removeProperty('--pb');
-      if (below) v ? below.style.setProperty('--pt', v) : below.style.removeProperty('--pt');
-    });
-  }
 
   const chev = d => '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="' + d + '"/></svg>';
   $('lane-l').innerHTML = chev('M3 9l4-4 4 4').repeat(7);   // links: nach vorne (oben)
@@ -593,7 +585,7 @@ button, input { font: inherit; color: inherit; }
       if (isHalf(n)) b.classList.toggle('free', !ps.length);
       const bays = b.querySelector('.bays');
       bays.replaceChildren();
-      const shown = ps.slice(0, ps.length > 4 ? 3 : 4);
+      const shown = isHalf(n) ? ps.slice(0, 1) : ps.slice(0, ps.length > 2 ? 1 : 2);
       for (const p of shown) {
         const ch = p.chargen || [];
         bays.append(el('span', { class: 't' + (hitM.has(p.id) ? ' hl' : '') },
@@ -602,7 +594,7 @@ button, input { font: inherit; color: inherit; }
             ? ch.map(c => el('span', { class: 'ch' + (q && c.toLowerCase().includes(q) ? ' hl' : '') }, c))
             : el('span', { class: 'ch none' }, 'ohne Charge')));
       }
-      if (ps.length > shown.length) bays.append(el('span', { class: 't more' }, '+ ' + (ps.length - shown.length) + ' weitere'));
+      if (ps.length > shown.length) bays.append(el('span', { class: 't more' }, '+ ' + (ps.length - shown.length) + (isHalf(n) ? '' : ' weitere')));
       b.classList.toggle('match', hitG.has(n));
       b.setAttribute('aria-pressed', String(state.current === n));
       b.setAttribute('aria-label', (isHalf(n) ? 'Zwischen Gasse ' + (n - 0.5) + ' und ' + (n + 0.5) : 'Gasse ' + n) + (ps.length
@@ -782,9 +774,7 @@ button, input { font: inherit; color: inherit; }
   $('next').addEventListener('click', () => step(1));
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && state.current) close(); });
 
-  function render() { renderPlan(); fitSeams(); renderFinder(); renderSheet(); }
-  window.addEventListener('resize', fitSeams);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSeams);
+  function render() { renderPlan(); renderFinder(); renderSheet(); }
 
   // ---------- Schreiben ----------
   function fail(e) {
