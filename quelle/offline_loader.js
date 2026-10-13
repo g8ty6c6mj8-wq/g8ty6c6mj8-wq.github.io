@@ -3,11 +3,13 @@
   let SEED = { stamp: 0, models: {}, belegung: {} };
   try { SEED = JSON.parse($('seed').textContent); } catch (_) {}
   const clone = o => JSON.parse(JSON.stringify(o));
-  const fromSeed = () => ({ stamp: SEED.stamp, seedStamp: SEED.stamp, models: clone(SEED.models || {}), belegung: clone(SEED.belegung || {}), deleted: {} });
+  const fromSeed = () => ({ stamp: SEED.stamp, seedStamp: SEED.stamp, models: clone(SEED.models || {}), belegung: clone(SEED.belegung || {}), deleted: {}, log: [], admin: null });
   // JSON mit sortierten Schlüsseln, um Stände zu vergleichen
   const canon = o => JSON.stringify(o, (k, v) => v && typeof v === 'object' && !Array.isArray(v)
     ? Object.keys(v).sort().reduce((r, x) => (r[x] = v[x], r), {}) : v);
-  const pick = s => ({ models: (s && s.models) || {}, belegung: (s && s.belegung) || {}, deleted: (s && s.deleted) || {} });
+  const pick = s => ({ models: (s && s.models) || {}, belegung: (s && s.belegung) || {}, deleted: (s && s.deleted) || {},
+    log: (s && s.log) || [], admin: (s && s.admin) || null });
+  const LOG_MAX = 1500;
   let persistent = true;
   let mem = null;
 
@@ -88,7 +90,14 @@
     for (const [k, t] of Object.entries((b && b.deleted) || {})) if (!(del[k] >= t)) del[k] = t;
     const cutoff = Date.now() - 90 * 864e5;
     for (const k in del) if (del[k] < cutoff) delete del[k];
-    const out = { models: {}, belegung: {}, deleted: del };
+    // Verlauf: alle Einträge beider Seiten, nach Zeit sortiert, die neuesten LOG_MAX behalten
+    const logMap = new Map();
+    for (const e of [...((a && a.log) || []), ...((b && b.log) || [])]) if (e && e.id) logMap.set(e.id, e);
+    const log = [...logMap.values()].sort((x, y) => (x.ts - y.ts) || (x.id < y.id ? -1 : 1)).slice(-LOG_MAX);
+    // Admin-Schlüssel: der zuletzt festgelegte gilt
+    const aa = a && a.admin, ba = b && b.admin;
+    const admin = !aa ? (ba || null) : !ba ? aa : ((ba.ts || 0) > (aa.ts || 0) ? ba : aa);
+    const out = { models: {}, belegung: {}, deleted: del, log, admin };
     for (const col of ['models', 'belegung']) {
       const A = (a && a[col]) || {}, B = (b && b[col]) || {};
       for (const id of new Set([...Object.keys(A), ...Object.keys(B)])) {
@@ -152,7 +161,7 @@
     return sync.cache;
   }
   async function pushRemote(s, sha) {
-    const payload = { version: 1, updated: Date.now(), models: s.models, belegung: s.belegung, deleted: s.deleted };
+    const payload = { version: 1, updated: Date.now(), models: s.models, belegung: s.belegung, deleted: s.deleted, log: s.log, admin: s.admin };
     const body = { message: 'Gassenplan: Stand aktualisiert', content: b64encode(JSON.stringify(payload, null, 1)) };
     if (sha) body.sha = sha;
     const res = await gh('PUT', API + '/contents/' + REMOTE.path, body);
@@ -167,11 +176,15 @@
   function applyMerged(m) {
     const before = pick(mem);
     if (canon(before) === canon(m)) return;
+    mem.log = m.log;
+    mem.admin = m.admin;
+    if (canon({ a: before.models, b: before.belegung, d: before.deleted }) === canon({ a: m.models, b: m.belegung, d: m.deleted })) { renderAdmin(); return; }
     const modelsChanged = canon(before.models) !== canon(m.models);
     mem.models = m.models;
     mem.belegung = m.belegung;
     mem.deleted = m.deleted;
     mem.stamp = Date.now();
+    renderAdmin();
     if (modelsChanged) emit('models');
     emit('belegung');
     renderStand();
@@ -329,6 +342,147 @@
   }
 
   $('sync').hidden = false;
+
+  // ---------- Änderungsverlauf, nur mit Admin-Schlüssel lesbar ----------
+  // Jedes Handy verschlüsselt neue Verlaufseinträge mit dem öffentlichen Schlüssel (RSA-OAEP).
+  // Den passenden privaten Schlüssel gibt es nur verschlüsselt mit dem Admin-Schlüssel (PBKDF2 + AES-GCM).
+  const subtle = window.crypto && window.crypto.subtle;
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  const ab2b64 = buf => { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s); };
+  const b642ab = str => { const s = atob(str); const b = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b.buffer; };
+  const RSA = { name: 'RSA-OAEP', hash: 'SHA-256' };
+  let pubCache = { jwk: null, key: null };
+  let unlocked = null;   // privater Schlüssel, solange der Verlauf geöffnet ist
+
+  async function pubKey() {
+    const jwk = mem && mem.admin && mem.admin.pub;
+    if (!jwk || !subtle) return null;
+    const id = JSON.stringify(jwk);
+    if (pubCache.jwk !== id) pubCache = { jwk: id, key: await subtle.importKey('jwk', jwk, RSA, false, ['encrypt']) };
+    return pubCache.key;
+  }
+  async function wrapKey(pw, salt) {
+    const base = await subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveKey']);
+    return subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 210000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  }
+  async function sealPrivate(privKey, pw) {
+    const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+    const raw = await subtle.exportKey('pkcs8', privKey);
+    const data = await subtle.encrypt({ name: 'AES-GCM', iv }, await wrapKey(pw, salt), raw);
+    return { salt: ab2b64(salt), iv: ab2b64(iv), data: ab2b64(data) };
+  }
+  async function openPrivate(pw) {
+    const pr = mem.admin.priv;
+    const raw = await subtle.decrypt({ name: 'AES-GCM', iv: b642ab(pr.iv) }, await wrapKey(pw, new Uint8Array(b642ab(pr.salt))), b642ab(pr.data));
+    return subtle.importKey('pkcs8', raw, RSA, true, ['decrypt']);
+  }
+
+  window.__gassenplanLog = async entry => {
+    try {
+      const key = await pubKey();
+      if (!key) return;   // noch kein Admin-Schlüssel festgelegt
+      const data = await subtle.encrypt({ name: 'RSA-OAEP' }, key, enc.encode(JSON.stringify(entry)));
+      mem.log = (mem.log || []).concat({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), ts: Date.now(), e: ab2b64(data) }).slice(-LOG_MAX);
+      mem.pending = true;
+      mem.rev = (mem.rev || 0) + 1;
+      saveStore();
+      scheduleSync();
+      if (unlocked) renderAdmin();
+    } catch (_) {}
+  };
+
+  const where = g => isHalf(g) ? 'mittig auf ' + label(g) : 'in Gasse ' + g;
+  function describe(x) {
+    const what = x.m === BELEGT ? 'Belegt' : 'Modell ' + x.m;
+    switch (x.a) {
+      case 'add': return x.m === BELEGT ? 'Als belegt markiert ' + where(x.g) : what + ' ' + where(x.g) + ' gestellt';
+      case 'del': return (x.m === BELEGT ? 'Belegt entfernt ' + where(x.g) : what + ' ' + where(x.g) + ' entfernt') + (x.c && x.c.length ? ' (Chargen ' + x.c.join(', ') + ')' : '');
+      case 'ch+': return 'Charge ' + x.c + ' eingetragen · ' + what + ' ' + where(x.g);
+      case 'ch-': return 'Charge ' + x.c + ' entfernt · ' + what + ' ' + where(x.g);
+      case 'model': return 'Modell ' + x.m + ' angelegt';
+      default: return 'Änderung';
+    }
+  }
+  const dayFmt = ms => new Date(ms).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+  let shownCount = 200;
+
+  async function renderAdmin() {
+    if (!$('admin')) return;
+    const has = !!(mem && mem.admin && mem.admin.pub);
+    $('admin-pw2').hidden = has;
+    $('admin-form').hidden = !!unlocked;
+    $('admin-view').hidden = !unlocked;
+    $('admin-go').textContent = has ? 'Öffnen' : 'Festlegen';
+    $('admin-pw').placeholder = has ? 'Admin-Schlüssel' : 'Neuer Admin-Schlüssel';
+    $('admin-status').textContent = !has
+      ? 'Noch kein Admin-Schlüssel festgelegt. Lege jetzt deinen eigenen fest (mindestens 6 Zeichen). Erst danach wird der Verlauf aufgezeichnet.'
+      : unlocked ? 'Geöffnet. ' + (mem.log || []).length + ' Einträge im Verlauf.' : 'Gesperrt. Nur mit dem Admin-Schlüssel einsehbar.';
+    if (!unlocked) return;
+    const list = $('admin-log');
+    const items = (mem.log || []).slice().reverse().slice(0, shownCount);
+    const rows = [];
+    for (const it of items) {
+      let text;
+      try { text = describe(JSON.parse(dec.decode(await subtle.decrypt({ name: 'RSA-OAEP' }, unlocked, b642ab(it.e))))); }
+      catch (_) { text = 'Eintrag mit einem älteren Schlüssel, nicht lesbar'; }
+      rows.push({ ts: it.ts, text });
+    }
+    list.replaceChildren();
+    if (!rows.length) list.append(el('p', { class: 'hint' }, 'Noch keine Änderungen aufgezeichnet.'));
+    let day = '';
+    for (const r of rows) {
+      const d = dayFmt(r.ts);
+      if (d !== day) { day = d; list.append(el('div', { class: 'log-day' }, d)); }
+      list.append(el('div', { class: 'log-row' }, el('time', {}, hhmm(r.ts)), el('span', {}, r.text)));
+    }
+    $('admin-more').hidden = (mem.log || []).length <= shownCount;
+    const vl = $('admin-versions');
+    vl.replaceChildren(...(typeof VERSION_HISTORY !== 'undefined' ? VERSION_HISTORY : []).map(v =>
+      el('div', { class: 'log-row' }, el('time', {}, v.d || ''), el('span', {}, el('b', {}, 'Version ' + v.v + ' '), v.t))));
+  }
+
+  if ($('admin') && subtle) {
+    $('admin').hidden = false;
+    $('admin-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const pw = $('admin-pw').value;
+      const has = !!(mem.admin && mem.admin.pub);
+      try {
+        if (!has) {
+          if (pw.length < 6) { toast('Der Admin-Schlüssel braucht mindestens 6 Zeichen.'); return; }
+          if (pw !== $('admin-pw2').value) { toast('Die beiden Eingaben stimmen nicht überein.'); return; }
+          const pair = await subtle.generateKey({ ...RSA, modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]) }, true, ['encrypt', 'decrypt']);
+          mem.admin = { pub: await subtle.exportKey('jwk', pair.publicKey), priv: await sealPrivate(pair.privateKey, pw), ts: Date.now() };
+          mem.pending = true; mem.rev = (mem.rev || 0) + 1; saveStore(); scheduleSync();
+          unlocked = pair.privateKey;
+          toast('Admin-Schlüssel festgelegt. Ab jetzt wird der Verlauf aufgezeichnet.');
+        } else {
+          unlocked = await openPrivate(pw);
+        }
+        $('admin-pw').value = ''; $('admin-pw2').value = '';
+        shownCount = 200;
+        renderAdmin();
+      } catch (_) {
+        unlocked = null;
+        toast('Falscher Admin-Schlüssel.');
+      }
+    });
+    $('admin-lock').addEventListener('click', () => { unlocked = null; renderAdmin(); });
+    $('admin-more').addEventListener('click', () => { shownCount += 300; renderAdmin(); });
+    $('admin-change').addEventListener('click', async () => {
+      const pw = $('admin-new').value;
+      if (pw.length < 6) { toast('Der neue Admin-Schlüssel braucht mindestens 6 Zeichen.'); return; }
+      mem.admin = { pub: mem.admin.pub, priv: await sealPrivate(unlocked, pw), ts: Date.now() };
+      mem.pending = true; mem.rev = (mem.rev || 0) + 1; saveStore(); scheduleSync();
+      $('admin-new').value = '';
+      toast('Admin-Schlüssel geändert.');
+    });
+    // beim Schließen der Einstellungen wieder sperren
+    $('close-settings').addEventListener('click', () => { unlocked = null; setTimeout(renderAdmin, 350); });
+    $('scrim').addEventListener('click', () => { unlocked = null; setTimeout(renderAdmin, 350); });
+    renderAdmin();
+  }
+
 
   // Gehostete App: offline verfügbar machen, neue Fassung automatisch laden, Hinweis zum Home-Bildschirm in Safari
   if (location.protocol === 'https:' || location.hostname === 'localhost') {

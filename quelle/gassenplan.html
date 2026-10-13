@@ -556,7 +556,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     <svg width="20" height="20" viewBox="0 0 20 20"><g fill="#1b2129"><rect x="2" y="3" width="6" height="3" rx="1"/><rect x="2" y="8.5" width="6" height="3" rx="1"/><rect x="2" y="14" width="6" height="3" rx="1"/><rect x="12" y="3" width="6" height="3" rx="1"/><rect x="12" y="8.5" width="6" height="3" rx="1"/><rect x="12" y="14" width="6" height="3" rx="1"/></g></svg>
   </span>
   <div class="name">Gassenplan</div>
-  <div class="ver"><span class="app-version">Version 2.3</span> · <b>Alpha</b></div>
+  <div class="ver"><span class="app-version">Version 2.4</span> · <b>Alpha</b></div>
   <div class="dev">Entwickelt von Kadir Atak</div>
 </div>
 
@@ -623,7 +623,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   </div>
 
   <div class="end end-back" id="end-back"><span class="door"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5V2.5h7v10M9.5 12.5h2M6.5 7.5h.01"/></svg>Eingang · hinten</span></div>
-  <div class="version">Gassenplan <span class="app-version">Version 2.3</span> · Alpha</div>
+  <div class="version">Gassenplan <span class="app-version">Version 2.4</span> · Alpha</div>
 </div>
 
 <div class="scrim" id="scrim" hidden></div>
@@ -654,7 +654,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   <div class="sheet-in">
     <div class="sheet-head">
       <div class="sheet-title">
-        <div class="label">Gassenplan · <span class="app-version">Version 2.3</span> · Alpha</div>
+        <div class="label">Gassenplan · <span class="app-version">Version 2.4</span> · Alpha</div>
         <h2 id="settings-h">Einstellungen und Hilfe</h2>
       </div>
       <button class="icon-btn" id="close-settings" type="button" aria-label="Schließen">
@@ -681,7 +681,9 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 <script>
 (() => {
   // Version: bei jeder Verbesserung erhöhen (siehe CHANGELOG.md)
-  const APP_VERSION = '2.3', APP_STAGE = 'Alpha';
+  const APP_VERSION = '2.4', APP_STAGE = 'Alpha';
+  // App-Versionen mit Datum: wird beim Bauen aus CHANGELOG.md eingesetzt
+  const VERSION_HISTORY = /*VERSION_HISTORY*/[];
   const TOTAL = 31, RIGHT_END = 19;
   const $ = id => document.getElementById(id);
   document.querySelectorAll('.app-version').forEach(e => { e.textContent = 'Version ' + APP_VERSION; });
@@ -690,11 +692,10 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 
   // Was ist neu: erscheint bei jedem Öffnen, bis man es schließt; bei der nächsten Version wieder
   const WHATS_NEW = {
-    version: '2.3', from: '2.2',
+    version: '2.4', from: '2.3',
     items: [
-      ['Neue Auswahl „Belegt“', 'Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge: Gasse antippen und „Belegt“ wählen.'],
-      ['Belegte Plätze finden', 'Oben neben den Modellen gibt es den Knopf „Belegt“. Er zeigt alle belegten Plätze.'],
-      ['Im Plan', '„Belegt“ erscheint als gestreiftes Schild, auch auf Zwischenplätzen. Die Legende vorne links erklärt es.'],
+      ['Änderungsverlauf', 'Änderungen an Einträgen werden jetzt mit Datum und Uhrzeit festgehalten, ohne Namen. Einsehen kann ihn nur der Verantwortliche.'],
+      ['Alles andere bleibt gleich', 'Plan, Eintragen, Suche und „Belegt“ funktionieren wie bisher.'],
     ],
   };
   const NEWS_KEY = 'gassenplan-neu-gelesen';
@@ -1139,18 +1140,23 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     const pos = state.models.reduce((a, m) => Math.max(a, m.pos || 0), 0) + 1;
     try {
       await state.db.collection('models').doc(nr).set({ nr, pos });
+      logChange({ a: 'model', m: nr });
       state.addingModel = false;
       toast('Modell ' + nr + ' angelegt.');
     } catch (e) { fail(e); }
   }
+  // Verlauf: Änderungen melden; die App mit gemeinsamem Speicher legt sie verschlüsselt ab
+  const logChange = entry => { try { if (window.__gassenplanLog) window.__gassenplanLog(entry); } catch (_) {} };
+
   async function addPlacement(g, nr) {
     try {
       await state.db.collection('belegung').doc(pid(g, nr)).set({ gasse: g, modell: nr, chargen: [], ts: Date.now() });
+      logChange({ a: 'add', g, m: nr });
     } catch (e) { fail(e); }
   }
   async function removePlacement(p) {
     state.armed = null;
-    try { await state.db.collection('belegung').doc(p.id).delete(); toast(isBelegt(p.modell) ? 'Belegt ' + placeName(p.gasse) + ' entfernt.' : 'Modell ' + p.modell + ' ' + placeName(p.gasse) + ' entfernt.'); }
+    try { await state.db.collection('belegung').doc(p.id).delete(); logChange({ a: 'del', g: p.gasse, m: p.modell, c: p.chargen || [] }); toast(isBelegt(p.modell) ? 'Belegt ' + placeName(p.gasse) + ' entfernt.' : 'Modell ' + p.modell + ' ' + placeName(p.gasse) + ' entfernt.'); }
     catch (e) { fail(e); }
   }
   async function addCharge(p, raw, inpId) {
@@ -1161,13 +1167,14 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     ch.push(c);
     try {
       await state.db.collection('belegung').doc(p.id).update({ chargen: ch, ts: Date.now() });
+      logChange({ a: 'ch+', g: p.gasse, m: p.modell, c });
       const i = $(inpId); if (i) { i.value = ''; i.focus(); }
     } catch (e) { fail(e); }
   }
   async function removeCharge(p, c) {
     state.armed = null;
     const ch = (p.chargen || []).filter(x => x !== c);
-    try { await state.db.collection('belegung').doc(p.id).update({ chargen: ch, ts: Date.now() }); }
+    try { await state.db.collection('belegung').doc(p.id).update({ chargen: ch, ts: Date.now() }); logChange({ a: 'ch-', g: p.gasse, m: p.modell, c }); }
     catch (e) { fail(e); }
   }
 

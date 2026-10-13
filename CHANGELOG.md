@@ -3,27 +3,31 @@
 Die aktuelle Version steht in `quelle/gassenplan.html` (`APP_VERSION`) und wird beim Start der App
 kurz eingeblendet. Bei jeder Verbesserung wird sie erhöht.
 
-Sicherungen: Der Zweig `backup-2.2` enthält Version 2.2 unverändert. Zum Zurücksetzen wird `main` auf diesen Stand gebracht.
+Sicherungen: Für jede Version gibt es einen Zweig `backup-<Version>` (z. B. `backup-2.3`) mit genau diesem Stand. Zum Zurücksetzen wird `main` auf diesen Stand gebracht.
 
-## 2.3 · Alpha
+## 2.4 · Alpha · 13.10.2026
+- Änderungsverlauf in den Einstellungen: wann was an den Einträgen geändert wurde, ohne Namen
+- Nur mit eigenem Admin-Schlüssel lesbar; die Einträge werden verschlüsselt gespeichert
+
+## 2.3 · Alpha · 13.10.2026
 - Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge
 - „Belegt“ als Filter-Knopf oben und in der Übersicht
 - Fenster „Was ist neu“: erscheint bei jedem Öffnen, bis man es mit X oder „Verstanden“ schließt;
   die Texte stehen in `quelle/gassenplan.html` unter `WHATS_NEW` und werden bei jeder Version angepasst
 
-## 2.2 · Alpha
+## 2.2 · Alpha · 12.10.2026
 - Startbild nennt den Entwickler: Kadir Atak
 
-## 2.1 · Alpha
+## 2.1 · Alpha · 12.10.2026
 - Mehr Abstand zwischen Zwischenplätzen und den Einträgen der Gassen daneben
 - Versionsanzeige: Startbild beim Öffnen, kleine Angabe unter dem Plan und in den Einstellungen
 
-## 2.0 · Alpha
+## 2.0 · Alpha · 12.10.2026
 - Neues Erscheinungsbild: Kopfleiste mit Live-Status, Regale als Karten, Übersicht vorne links
 - Einstellungen und Hilfe in eigenem Fenster
 - Animationen: Einblenden beim Start, neue Einträge, aufleuchtende Gassen bei Änderungen
 
-## 1.x · Aufbau (nachträglich zusammengefasst)
+## 1.x · Aufbau · 12.10.2026 (nachträglich zusammengefasst)
 - 1.9 Zwischenplätze blau, Schild abgesetzt von der Gassennummer, flachere Gassen
 - 1.8 Modelle und Chargen werden nie abgeschnitten, alle Gassen gleich dick
 - 1.7 Einheitliche Schriftgrößen, ruhigere Zwischenplätze

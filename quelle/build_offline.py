@@ -62,6 +62,26 @@ src = must_replace(src, "<!--settings-->",
         </div>
         <p class="hint">Ohne gemeinsamen Speicher bleiben die Einträge nur auf diesem Handy.</p>
       </section>
+      <section class="admin" id="admin" hidden>
+        <div class="label">Änderungsverlauf · nur Admin</div>
+        <p id="admin-status">Gesperrt.</p>
+        <form class="admin-form" id="admin-form">
+          <input id="admin-pw" type="password" placeholder="Admin-Schlüssel" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Admin-Schlüssel">
+          <input id="admin-pw2" type="password" placeholder="Schlüssel wiederholen" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Admin-Schlüssel wiederholen" hidden>
+          <button class="btn primary" type="submit" id="admin-go">Öffnen</button>
+        </form>
+        <div id="admin-view" hidden>
+          <div class="log" id="admin-log"></div>
+          <button class="btn" id="admin-more" type="button" hidden>Ältere anzeigen</button>
+          <div class="label" style="margin-top: 6px;">App-Versionen</div>
+          <div class="log" id="admin-versions"></div>
+          <details class="admin-change">
+            <summary>Admin-Schlüssel ändern</summary>
+            <div class="addrow"><input id="admin-new" type="password" placeholder="Neuer Schlüssel" autocomplete="off" aria-label="Neuer Admin-Schlüssel"><button class="btn" type="button" id="admin-change">Ändern</button></div>
+          </details>
+          <button class="linkbtn" id="admin-lock" type="button">Verlauf sperren</button>
+        </div>
+      </section>
       <p class="hint" id="install-hint" hidden><b>Als App auf dem Handy:</b> In Safari unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“. Danach startet der Gassenplan wie eine App, auch ohne Netz.</p>""")
 src = must_replace(src, "@media (prefers-reduced-motion: reduce) {",
 """.offline, .sync { display: flex; flex-direction: column; gap: 8px; background: var(--surface-2); border-radius: 14px; padding: 12px; }
@@ -69,6 +89,21 @@ src = must_replace(src, "@media (prefers-reduced-motion: reduce) {",
 .offline #stand, .sync #sync-status { font-size: 14px; line-height: 1.45; }
 .sync .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .notice .row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.admin { display: flex; flex-direction: column; gap: 8px; background: var(--surface-2); border-radius: 14px; padding: 12px; }
+.admin p { margin: 0; font-size: 14px; line-height: 1.45; }
+.admin-form { display: flex; flex-direction: column; gap: 6px; }
+.admin-form input, .admin-change input { height: 42px; padding-inline: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 16px; min-width: 0; }
+.admin-form input:focus, .admin-change input:focus { outline: none; border-color: var(--mark); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mark) 30%, transparent); }
+#admin-view { display: flex; flex-direction: column; gap: 8px; }
+#admin-view[hidden] { display: none; }
+.log { display: flex; flex-direction: column; background: var(--surface); border-radius: 10px; border: 1px solid var(--line); max-height: 46vh; overflow-y: auto; }
+.log-day { position: sticky; top: 0; background: var(--surface-2); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.log-row { display: grid; grid-template-columns: 44px 1fr; gap: 8px; padding: 7px 10px; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 1.35; }
+.log-row:last-child { border-bottom: 0; }
+.log-row time { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
+#admin-versions .log-row { grid-template-columns: 84px 1fr; }
+.admin-change summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); padding: 4px 0; }
+.admin-change .addrow { margin-top: 6px; }
 
 @media (prefers-reduced-motion: reduce) {""")
 
@@ -78,6 +113,16 @@ chips_end = src.index("</div>", src.index('<!--chips-->')) + len("</div>")
 src = src[:chips_end] + "<!--/chips-->" + src[chips_end:]
 src = must_replace(src, '  <div class="floor" id="floor">', '  <!--plan--><div class="floor" id="floor">')
 src = must_replace(src, '\n\n  <div class="end end-back" id="end-back">', '<!--/plan-->\n\n  <div class="end end-back" id="end-back">')
+
+# 2c. App-Versionen mit Datum aus CHANGELOG.md
+_hist = []
+for _cl in (here.parent / "CHANGELOG.md", here / "CHANGELOG.md"):
+    if _cl.exists():
+        for _m in _re.finditer(r"^## (\S+) · \S+ · (\d\d\.\d\d\.\d{4})[^\n]*\n((?:- [^\n]*\n(?:  [^\n]*\n)*)*)", _cl.read_text(), _re.M):
+            _first = _re.sub(r"\s+", " ", _m.group(3).split("\n- ")[0].lstrip("- ")).strip()
+            _hist.append({"v": _m.group(1), "d": _m.group(2), "t": _first})
+        break
+src = must_replace(src, "/*VERSION_HISTORY*/[]", json.dumps(_hist, ensure_ascii=False))
 
 # 3. Quelltext vor dem ersten Rendern festhalten (für den Export)
 src = must_replace(src, "(() => {\n  // Version:",
