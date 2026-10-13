@@ -14,6 +14,19 @@ seed.setdefault("stamp", int(time.time() * 1000))
 out = pathlib.Path(sys.argv[1])
 pwa = "--pwa" in sys.argv
 
+# Prüfung: jede neue Version braucht ein passendes Fenster „Was ist neu“ und einen Eintrag im CHANGELOG
+import re as _re
+_ver = _re.search(r"const APP_VERSION = '([^']+)'", src).group(1)
+_news = _re.search(r"const WHATS_NEW = \{\s*version: '([^']+)', from: '([^']+)'", src)
+assert _news, "WHATS_NEW fehlt in gassenplan.html"
+assert _news.group(1) == _ver, f"WHATS_NEW ist noch für Version {_news.group(1)}, die App ist aber {_ver}: Texte für die neue Version eintragen"
+assert _news.group(2) != _ver, "WHATS_NEW.from muss die vorherige Version sein"
+for _cl in (here.parent / "CHANGELOG.md", here / "CHANGELOG.md"):
+    if _cl.exists():
+        _top = _re.search(r"^## (\S+)", _cl.read_text(), _re.M).group(1)
+        assert _top == _ver, f"CHANGELOG.md beginnt mit {_top}, die App ist aber {_ver}"
+        break
+
 def must_replace(s, old, new):
     assert s.count(old) == 1, ("nicht eindeutig", old[:60])
     return s.replace(old, new)

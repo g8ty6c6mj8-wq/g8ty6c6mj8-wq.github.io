@@ -24,4 +24,6 @@ python3 build_offline.py stage-pwa.html --pwa
 node prerender.js "$PWD/stage-pwa.html" "$PWD/../index.html"
 ```
 
+Das Bauskript prüft, dass `APP_VERSION`, das Fenster „Was ist neu“ (`WHATS_NEW`) und der oberste Eintrag in `CHANGELOG.md` zusammenpassen, und bricht sonst ab. Die Regeln für jede Änderung stehen in `CLAUDE.md`.
+
 `sw.js` liegt im Hauptordner. Bei Änderungen an den App-Dateien dort die Cache-Version (`CACHE`) erhöhen.
