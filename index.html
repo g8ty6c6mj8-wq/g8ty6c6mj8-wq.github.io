@@ -520,6 +520,34 @@ button, input { font: inherit; color: inherit; }
 @keyframes splash-out { to { opacity: 0; visibility: hidden; } }
 .version { text-align: center; font-size: 11px; color: var(--muted); opacity: .75; letter-spacing: .04em; }
 
+/* ---------- Was ist neu ---------- */
+.news {
+  position: fixed; inset: 0; z-index: 40;
+  display: grid; place-items: center; padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  background: var(--scrim);
+  animation: fade .3s ease both;
+}
+.news-card {
+  position: relative; width: 100%; max-width: 420px; max-height: 100%; overflow-y: auto;
+  background: var(--surface); border-radius: 20px; box-shadow: var(--shadow-2);
+  padding: 20px 18px 18px; display: flex; flex-direction: column; gap: 14px;
+  animation: rise .45s var(--ease) .05s both;
+}
+.news-card .icon-btn { position: absolute; top: 12px; right: 12px; }
+.news-head { display: flex; align-items: center; gap: 12px; padding-right: 44px; }
+.news-head .logo { width: 44px; height: 44px; border-radius: 12px; }
+.news-head h2 { margin: 2px 0 0; font-family: var(--f-sign); font-weight: 700; font-size: 26px; line-height: 1; letter-spacing: .02em; }
+.news-head .from { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.news ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.news li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; font-size: 15px; line-height: 1.45; }
+.news li::before {
+  content: "✓"; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center;
+  background: var(--mark-soft); color: var(--ink); font-weight: 700; font-size: 14px;
+}
+.news li b { display: block; font-weight: 600; }
+.news li span { color: var(--muted); font-size: 14px; }
+.news .btn { width: 100%; }
+
 /* ---------- Bewegung ---------- */
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
 @keyframes fade { from { opacity: 0; } }
@@ -703,6 +731,41 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   document.querySelectorAll('.app-version').forEach(e => { e.textContent = 'Version ' + APP_VERSION; });
   // Startbild nach dem Ausblenden ganz entfernen
   setTimeout(() => { const sp = $('splash'); if (sp) sp.remove(); }, 2000);
+
+  // Was ist neu: erscheint bei jedem Öffnen, bis man es schließt; bei der nächsten Version wieder
+  const WHATS_NEW = {
+    version: '2.3', from: '2.2',
+    items: [
+      ['Neue Auswahl „Belegt“', 'Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge: Gasse antippen und „Belegt“ wählen.'],
+      ['Belegte Plätze finden', 'Oben neben den Modellen gibt es den Knopf „Belegt“. Er zeigt alle belegten Plätze.'],
+      ['Im Plan', '„Belegt“ erscheint als gestreiftes Schild, auch auf Zwischenplätzen. Die Legende vorne links erklärt es.'],
+    ],
+  };
+  const NEWS_KEY = 'gassenplan-neu-gelesen';
+  function showNews() {
+    let seen = null;
+    try { seen = localStorage.getItem(NEWS_KEY); } catch (_) {}
+    if (seen === WHATS_NEW.version) return;
+    const closeNews = () => {
+      try { localStorage.setItem(NEWS_KEY, WHATS_NEW.version); } catch (_) {}
+      box.remove();
+    };
+    const box = el('div', { class: 'news', id: 'news', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'news-h' },
+      el('div', { class: 'news-card' },
+        el('button', { class: 'icon-btn', type: 'button', id: 'news-close', 'aria-label': 'Schließen', onclick: closeNews }),
+        el('div', { class: 'news-head' },
+          el('span', { class: 'logo', 'aria-hidden': 'true' }),
+          el('div', {},
+            el('div', { class: 'label' }, 'Was ist neu'),
+            el('h2', { id: 'news-h' }, 'Version ' + WHATS_NEW.version),
+            el('div', { class: 'from' }, 'Änderungen seit Version ' + WHATS_NEW.from))),
+        el('ul', {}, WHATS_NEW.items.map(([t, d]) => el('li', {}, el('div', {}, el('b', {}, t), el('span', {}, d))))),
+        el('button', { class: 'btn primary', type: 'button', onclick: closeNews }, 'Verstanden')));
+    box.querySelector('#news-close').innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>';
+    box.querySelector('.news-head .logo').innerHTML = document.querySelector('.appbar .logo').innerHTML;
+    document.body.append(box);
+  }
+  setTimeout(showNews, 1500);
   const buttons = {};
 
   const state = {

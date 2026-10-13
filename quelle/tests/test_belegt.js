@@ -8,6 +8,7 @@ const fs = require('fs');
   const real = JSON.parse(fs.readFileSync('/home/user/gassenplan-daten/daten.json', 'utf8')).belegung;
   await page.evaluate(b => { const k = 'gassenplan-offline-v1'; const m = JSON.parse(localStorage.getItem(k)); m.belegung = b; m.stamp = Date.now(); localStorage.setItem(k, JSON.stringify(m)); }, real);
   await page.reload(); await page.waitForTimeout(2200);
+  if (await page.locator('#news-close').count()) await page.click('#news-close');
   const gasse = n => page.locator('.rack > .g', { has: page.locator('.plate', { hasText: new RegExp('^' + n + '$') }) });
   // Gasse 12 als belegt markieren
   await gasse(12).click(); await page.waitForTimeout(500);

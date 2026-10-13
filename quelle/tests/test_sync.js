@@ -41,7 +41,7 @@ const remoteKeys = () => remote.content ? Object.keys(JSON.parse(remote.content)
   await new Promise(r => setTimeout(r, 2500));
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const errs = [];
-  const phone = async name => { const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }); await ctx.route('https://api.github.com/**', handler); const p = await ctx.newPage(); p.on('pageerror', e => errs.push(name + ': ' + e.message)); await p.goto('http://localhost:8766/'); return { ctx, p }; };
+  const phone = async name => { const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }); await ctx.route('https://api.github.com/**', handler); const p = await ctx.newPage(); p.on('pageerror', e => errs.push(name + ': ' + e.message)); await p.goto('http://localhost:8766/'); await p.waitForTimeout(1800); if (await p.locator('#news-close').count()) await p.click('#news-close'); return { ctx, p }; };
   const B = await phone('B'), A = await phone('A');
   // B hat schon eigene Einträge (vor dem Verbinden)
   await add(B.p, 12, '854', 'B-1'); await add(B.p, 3, '091', 'B-2');

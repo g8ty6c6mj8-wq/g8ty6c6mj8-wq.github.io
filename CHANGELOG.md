@@ -8,6 +8,8 @@ Sicherungen: Der Zweig `backup-2.2` enthält Version 2.2 unverändert. Zum Zurü
 ## 2.3 · Alpha
 - Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge
 - „Belegt“ als Filter-Knopf oben und in der Übersicht
+- Fenster „Was ist neu“: erscheint bei jedem Öffnen, bis man es mit X oder „Verstanden“ schließt;
+  die Texte stehen in `quelle/gassenplan.html` unter `WHATS_NEW` und werden bei jeder Version angepasst
 
 ## 2.2 · Alpha
 - Startbild nennt den Entwickler: Kadir Atak
