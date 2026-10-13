@@ -9,6 +9,8 @@ Gilt für alle Änderungen, die auf die Handys gehen. Sprache in App und Texten:
 3. **Fenster „Was ist neu“:** `WHATS_NEW` in `quelle/gassenplan.html` anpassen:
    `version` = neue Version, `from` = vorherige Version, 2–4 kurze Punkte für die Kollegen,
    verständlich und ohne Technik. Das Fenster erscheint bei jedem Öffnen, bis man es schließt.
+   Soll ein Update nicht bekannt gegeben werden (nur auf Kadirs Wunsch): `silent: true`, `items: []`,
+   und im CHANGELOG nur neutral „Interne Verbesserungen“ schreiben.
 4. **CHANGELOG.md** oben um die neue Version ergänzen.
 5. **Bauen und prüfen** (siehe `quelle/README.md`): Das Bauskript bricht ab, wenn Version,
    „Was ist neu“ und CHANGELOG nicht zusammenpassen. Tests in `quelle/tests/` laufen lassen,

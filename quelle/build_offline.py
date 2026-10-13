@@ -79,7 +79,7 @@ src = must_replace(src, "<!--settings-->",
             <summary>Admin-Schlüssel ändern</summary>
             <div class="addrow"><input id="admin-new" type="password" placeholder="Neuer Schlüssel" autocomplete="off" aria-label="Neuer Admin-Schlüssel"><button class="btn" type="button" id="admin-change">Ändern</button></div>
           </details>
-          <button class="linkbtn" id="admin-lock" type="button">Verlauf sperren</button>
+          <div class="row"><button class="linkbtn" id="admin-lock" type="button">Verlauf sperren</button><button class="linkbtn" id="admin-hide" type="button">Auf diesem Handy ausblenden</button></div>
         </div>
       </section>
       <p class="hint" id="install-hint" hidden><b>Als App auf dem Handy:</b> In Safari unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“. Danach startet der Gassenplan wie eine App, auch ohne Netz.</p>""")
@@ -91,6 +91,7 @@ src = must_replace(src, "@media (prefers-reduced-motion: reduce) {",
 .notice .row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .admin { display: flex; flex-direction: column; gap: 8px; background: var(--surface-2); border-radius: 14px; padding: 12px; }
 .admin p { margin: 0; font-size: 14px; line-height: 1.45; }
+.admin .row { display: flex; flex-wrap: wrap; gap: 12px; }
 .admin-form { display: flex; flex-direction: column; gap: 6px; }
 .admin-form input, .admin-change input { height: 42px; padding-inline: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 16px; min-width: 0; }
 .admin-form input:focus, .admin-change input:focus { outline: none; border-color: var(--mark); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mark) 30%, transparent); }

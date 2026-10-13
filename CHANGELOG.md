@@ -5,9 +5,11 @@ kurz eingeblendet. Bei jeder Verbesserung wird sie erhöht.
 
 Sicherungen: Für jede Version gibt es einen Zweig `backup-<Version>` (z. B. `backup-2.3`) mit genau diesem Stand. Zum Zurücksetzen wird `main` auf diesen Stand gebracht.
 
+## 2.5 · Alpha · 13.10.2026
+- Interne Verbesserungen, ohne Hinweisfenster
+
 ## 2.4 · Alpha · 13.10.2026
-- Änderungsverlauf in den Einstellungen: wann was an den Einträgen geändert wurde, ohne Namen
-- Nur mit eigenem Admin-Schlüssel lesbar; die Einträge werden verschlüsselt gespeichert
+- Interne Verbesserungen für den Verantwortlichen
 
 ## 2.3 · Alpha · 13.10.2026
 - Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge

@@ -569,6 +569,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 .notice .row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .admin { display: flex; flex-direction: column; gap: 8px; background: var(--surface-2); border-radius: 14px; padding: 12px; }
 .admin p { margin: 0; font-size: 14px; line-height: 1.45; }
+.admin .row { display: flex; flex-wrap: wrap; gap: 12px; }
 .admin-form { display: flex; flex-direction: column; gap: 6px; }
 .admin-form input, .admin-change input { height: 42px; padding-inline: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 16px; min-width: 0; }
 .admin-form input:focus, .admin-change input:focus { outline: none; border-color: var(--mark); box-shadow: 0 0 0 3px color-mix(in srgb, var(--mark) 30%, transparent); }
@@ -594,7 +595,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     <svg width="20" height="20" viewBox="0 0 20 20"><g fill="#1b2129"><rect x="2" y="3" width="6" height="3" rx="1"></rect><rect x="2" y="8.5" width="6" height="3" rx="1"></rect><rect x="2" y="14" width="6" height="3" rx="1"></rect><rect x="12" y="3" width="6" height="3" rx="1"></rect><rect x="12" y="8.5" width="6" height="3" rx="1"></rect><rect x="12" y="14" width="6" height="3" rx="1"></rect></g></svg>
   </span>
   <div class="name">Gassenplan</div>
-  <div class="ver"><span class="app-version">Version 2.4</span> · <b>Alpha</b></div>
+  <div class="ver"><span class="app-version">Version 2.5</span> · <b>Alpha</b></div>
   <div class="dev">Entwickelt von Kadir Atak</div>
 </div>
 
@@ -664,7 +665,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   </div><!--/plan-->
 
   <div class="end end-back" id="end-back"><span class="door"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5V2.5h7v10M9.5 12.5h2M6.5 7.5h.01"></path></svg>Eingang · hinten</span></div>
-  <div class="version">Gassenplan <span class="app-version">Version 2.4</span> · Alpha</div>
+  <div class="version">Gassenplan <span class="app-version">Version 2.5</span> · Alpha</div>
 </div>
 
 <div class="scrim" id="scrim" hidden=""></div>
@@ -695,7 +696,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   <div class="sheet-in">
     <div class="sheet-head">
       <div class="sheet-title">
-        <div class="label">Gassenplan · <span class="app-version">Version 2.4</span> · Alpha</div>
+        <div class="label">Gassenplan · <span class="app-version">Version 2.5</span> · Alpha</div>
         <h2 id="settings-h">Einstellungen und Hilfe</h2>
       </div>
       <button class="icon-btn" id="close-settings" type="button" aria-label="Schließen">
@@ -737,7 +738,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
             <summary>Admin-Schlüssel ändern</summary>
             <div class="addrow"><input id="admin-new" type="password" placeholder="Neuer Schlüssel" autocomplete="off" aria-label="Neuer Admin-Schlüssel"><button class="btn" type="button" id="admin-change">Ändern</button></div>
           </details>
-          <button class="linkbtn" id="admin-lock" type="button">Verlauf sperren</button>
+          <div class="row"><button class="linkbtn" id="admin-lock" type="button">Verlauf sperren</button><button class="linkbtn" id="admin-hide" type="button">Auf diesem Handy ausblenden</button></div>
         </div>
       </section>
       <p class="hint" id="install-hint" hidden=""><b>Als App auf dem Handy:</b> In Safari unten auf „Teilen“ tippen, dann „Zum Home-Bildschirm“. Danach startet der Gassenplan wie eine App, auch ohne Netz.</p>
@@ -760,9 +761,9 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 (() => {
   const SOURCE = '<!doctype html>\n' + document.documentElement.outerHTML;
   // Version: bei jeder Verbesserung erhöhen (siehe CHANGELOG.md)
-  const APP_VERSION = '2.4', APP_STAGE = 'Alpha';
+  const APP_VERSION = '2.5', APP_STAGE = 'Alpha';
   // App-Versionen mit Datum: wird beim Bauen aus CHANGELOG.md eingesetzt
-  const VERSION_HISTORY = [{"v": "2.4", "d": "13.10.2026", "t": "Änderungsverlauf in den Einstellungen: wann was an den Einträgen geändert wurde, ohne Namen"}, {"v": "2.3", "d": "13.10.2026", "t": "Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge"}, {"v": "2.2", "d": "12.10.2026", "t": "Startbild nennt den Entwickler: Kadir Atak"}, {"v": "2.1", "d": "12.10.2026", "t": "Mehr Abstand zwischen Zwischenplätzen und den Einträgen der Gassen daneben"}, {"v": "2.0", "d": "12.10.2026", "t": "Neues Erscheinungsbild: Kopfleiste mit Live-Status, Regale als Karten, Übersicht vorne links"}, {"v": "1.x", "d": "12.10.2026", "t": "1.9 Zwischenplätze blau, Schild abgesetzt von der Gassennummer, flachere Gassen"}];
+  const VERSION_HISTORY = [{"v": "2.5", "d": "13.10.2026", "t": "Interne Verbesserungen, ohne Hinweisfenster"}, {"v": "2.4", "d": "13.10.2026", "t": "Interne Verbesserungen für den Verantwortlichen"}, {"v": "2.3", "d": "13.10.2026", "t": "Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge"}, {"v": "2.2", "d": "12.10.2026", "t": "Startbild nennt den Entwickler: Kadir Atak"}, {"v": "2.1", "d": "12.10.2026", "t": "Mehr Abstand zwischen Zwischenplätzen und den Einträgen der Gassen daneben"}, {"v": "2.0", "d": "12.10.2026", "t": "Neues Erscheinungsbild: Kopfleiste mit Live-Status, Regale als Karten, Übersicht vorne links"}, {"v": "1.x", "d": "12.10.2026", "t": "1.9 Zwischenplätze blau, Schild abgesetzt von der Gassennummer, flachere Gassen"}];
   const TOTAL = 31, RIGHT_END = 19;
   const $ = id => document.getElementById(id);
   document.querySelectorAll('.app-version').forEach(e => { e.textContent = 'Version ' + APP_VERSION; });
@@ -770,18 +771,16 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   setTimeout(() => { const sp = $('splash'); if (sp) sp.remove(); }, 2000);
 
   // Was ist neu: erscheint bei jedem Öffnen, bis man es schließt; bei der nächsten Version wieder
+  // silent: true = Update ohne Fenster „Was ist neu“ (nur wenn Kadir Atak das so will)
   const WHATS_NEW = {
-    version: '2.4', from: '2.3',
-    items: [
-      ['Änderungsverlauf', 'Änderungen an Einträgen werden jetzt mit Datum und Uhrzeit festgehalten, ohne Namen. Einsehen kann ihn nur der Verantwortliche.'],
-      ['Alles andere bleibt gleich', 'Plan, Eintragen, Suche und „Belegt“ funktionieren wie bisher.'],
-    ],
+    version: '2.5', from: '2.4', silent: true,
+    items: [],
   };
   const NEWS_KEY = 'gassenplan-neu-gelesen';
   function showNews() {
     let seen = null;
     try { seen = localStorage.getItem(NEWS_KEY); } catch (_) {}
-    if (seen === WHATS_NEW.version) return;
+    if (WHATS_NEW.silent || !WHATS_NEW.items.length || seen === WHATS_NEW.version) return;
     const closeNews = () => {
       try { localStorage.setItem(NEWS_KEY, WHATS_NEW.version); } catch (_) {}
       box.remove();
@@ -1700,8 +1699,25 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
       el('div', { class: 'log-row' }, el('time', {}, v.d || ''), el('span', {}, el('b', {}, 'Version ' + v.v + ' '), v.t))));
   }
 
-  if ($('admin') && subtle) {
+  // Der Bereich ist für Kollegen unsichtbar. Sichtbar wird er auf einem Handy, auf dem der Admin-Schlüssel
+  // einmal eingegeben wurde, oder nach fünfmaligem Antippen der kleinen Versionsangabe unter dem Plan.
+  const ADMIN_DEVICE = 'gassenplan-admin-geraet';
+  const isAdminDevice = () => { try { return localStorage.getItem(ADMIN_DEVICE) === '1'; } catch (_) { return false; } };
+  const markAdminDevice = on => { try { on ? localStorage.setItem(ADMIN_DEVICE, '1') : localStorage.removeItem(ADMIN_DEVICE); } catch (_) {} };
+  function revealAdmin() {
     $('admin').hidden = false;
+    $('open-settings').click();
+    setTimeout(() => $('admin').scrollIntoView({ block: 'start', behavior: 'smooth' }), 400);
+  }
+  if ($('admin') && subtle) {
+    $('admin').hidden = !isAdminDevice();
+    const ver = document.querySelector('.wrap > .version');
+    let taps = [];
+    if (ver) ver.addEventListener('click', () => {
+      const now = Date.now();
+      taps = taps.filter(t => now - t < 3000).concat(now);
+      if (taps.length >= 5) { taps = []; revealAdmin(); }
+    });
     $('admin-form').addEventListener('submit', async e => {
       e.preventDefault();
       const pw = $('admin-pw').value;
@@ -1719,6 +1735,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
           unlocked = await openPrivate(pw);
         }
         $('admin-pw').value = ''; $('admin-pw2').value = '';
+        markAdminDevice(true);
         shownCount = 200;
         renderAdmin();
       } catch (_) {
@@ -1727,6 +1744,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
       }
     });
     $('admin-lock').addEventListener('click', () => { unlocked = null; renderAdmin(); });
+    $('admin-hide').addEventListener('click', () => { unlocked = null; markAdminDevice(false); $('admin').hidden = true; renderAdmin(); toast('Auf diesem Handy ausgeblendet.'); });
     $('admin-more').addEventListener('click', () => { shownCount += 300; renderAdmin(); });
     $('admin-change').addEventListener('click', async () => {
       const pw = $('admin-new').value;
@@ -1737,8 +1755,9 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
       toast('Admin-Schlüssel geändert.');
     });
     // beim Schließen der Einstellungen wieder sperren
-    $('close-settings').addEventListener('click', () => { unlocked = null; setTimeout(renderAdmin, 350); });
-    $('scrim').addEventListener('click', () => { unlocked = null; setTimeout(renderAdmin, 350); });
+    const relock = () => { unlocked = null; setTimeout(() => { if (!isAdminDevice()) $('admin').hidden = true; renderAdmin(); }, 350); };
+    $('close-settings').addEventListener('click', relock);
+    $('scrim').addEventListener('click', relock);
     renderAdmin();
   }
 

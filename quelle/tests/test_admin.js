@@ -43,9 +43,10 @@ const remoteKeys = () => remote.content ? Object.keys(JSON.parse(remote.content)
   const errs = [];
   const phone = async name => { const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }); await ctx.route('https://api.github.com/**', handler); const p = await ctx.newPage(); p.on('pageerror', e => errs.push(name + ': ' + e.message)); await p.goto('http://localhost:8767/'); await p.waitForTimeout(1800); if (await p.locator('#news-close').count()) await p.click('#news-close'); return { ctx, p }; };
   const A = await phone('A'), B = await phone('B');
+  const reveal = async p => { const v = p.locator('.wrap > .version'); await v.scrollIntoViewIfNeeded(); for (let i = 0; i < 5; i++) await v.click({ force: true }); await p.waitForTimeout(900); };
   await connect(A.p, TOKEN); await connect(B.p, TOKEN);
-  // A legt den Admin-Schlüssel fest
-  await settings(A.p, true);
+  // A legt den Admin-Schlüssel fest (versteckter Zugang)
+  await reveal(A.p);
   const st0 = await A.p.locator('#admin-status').innerText();
   await A.p.fill('#admin-pw', 'geheim123'); await A.p.fill('#admin-pw2', 'geheim123'); await A.p.click('#admin-go'); await A.p.waitForTimeout(2500);
   const st1 = await A.p.locator('#admin-status').innerText();
@@ -62,7 +63,7 @@ const remoteKeys = () => remote.content ? Object.keys(JSON.parse(remote.content)
   const versions = (await A.p.locator('#admin-versions').innerText()).split('\n').slice(0, 2).join(' | ');
   await A.p.locator('#settings .sheet-body').screenshot({ path: 'admin-shot.png' });
   // B: falscher Schlüssel, dann richtiger
-  await settings(B.p, true);
+  await reveal(B.p);
   await B.p.fill('#admin-pw', 'falsch99'); await B.p.click('#admin-go'); await B.p.waitForTimeout(1500);
   const wrong = { toast: await B.p.locator('#toast').innerText(), offen: await B.p.locator('#admin-view').isVisible() };
   await B.p.fill('#admin-pw', 'geheim123'); await B.p.click('#admin-go'); await B.p.waitForTimeout(1500);

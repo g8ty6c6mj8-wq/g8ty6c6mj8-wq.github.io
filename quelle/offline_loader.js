@@ -441,8 +441,25 @@
       el('div', { class: 'log-row' }, el('time', {}, v.d || ''), el('span', {}, el('b', {}, 'Version ' + v.v + ' '), v.t))));
   }
 
-  if ($('admin') && subtle) {
+  // Der Bereich ist für Kollegen unsichtbar. Sichtbar wird er auf einem Handy, auf dem der Admin-Schlüssel
+  // einmal eingegeben wurde, oder nach fünfmaligem Antippen der kleinen Versionsangabe unter dem Plan.
+  const ADMIN_DEVICE = 'gassenplan-admin-geraet';
+  const isAdminDevice = () => { try { return localStorage.getItem(ADMIN_DEVICE) === '1'; } catch (_) { return false; } };
+  const markAdminDevice = on => { try { on ? localStorage.setItem(ADMIN_DEVICE, '1') : localStorage.removeItem(ADMIN_DEVICE); } catch (_) {} };
+  function revealAdmin() {
     $('admin').hidden = false;
+    $('open-settings').click();
+    setTimeout(() => $('admin').scrollIntoView({ block: 'start', behavior: 'smooth' }), 400);
+  }
+  if ($('admin') && subtle) {
+    $('admin').hidden = !isAdminDevice();
+    const ver = document.querySelector('.wrap > .version');
+    let taps = [];
+    if (ver) ver.addEventListener('click', () => {
+      const now = Date.now();
+      taps = taps.filter(t => now - t < 3000).concat(now);
+      if (taps.length >= 5) { taps = []; revealAdmin(); }
+    });
     $('admin-form').addEventListener('submit', async e => {
       e.preventDefault();
       const pw = $('admin-pw').value;
@@ -460,6 +477,7 @@
           unlocked = await openPrivate(pw);
         }
         $('admin-pw').value = ''; $('admin-pw2').value = '';
+        markAdminDevice(true);
         shownCount = 200;
         renderAdmin();
       } catch (_) {
@@ -468,6 +486,7 @@
       }
     });
     $('admin-lock').addEventListener('click', () => { unlocked = null; renderAdmin(); });
+    $('admin-hide').addEventListener('click', () => { unlocked = null; markAdminDevice(false); $('admin').hidden = true; renderAdmin(); toast('Auf diesem Handy ausgeblendet.'); });
     $('admin-more').addEventListener('click', () => { shownCount += 300; renderAdmin(); });
     $('admin-change').addEventListener('click', async () => {
       const pw = $('admin-new').value;
@@ -478,8 +497,9 @@
       toast('Admin-Schlüssel geändert.');
     });
     // beim Schließen der Einstellungen wieder sperren
-    $('close-settings').addEventListener('click', () => { unlocked = null; setTimeout(renderAdmin, 350); });
-    $('scrim').addEventListener('click', () => { unlocked = null; setTimeout(renderAdmin, 350); });
+    const relock = () => { unlocked = null; setTimeout(() => { if (!isAdminDevice()) $('admin').hidden = true; renderAdmin(); }, 350); };
+    $('close-settings').addEventListener('click', relock);
+    $('scrim').addEventListener('click', relock);
     renderAdmin();
   }
 
