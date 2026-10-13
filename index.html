@@ -310,6 +310,18 @@ button, input { font: inherit; color: inherit; }
 .g .t .ch { display: inline-block; font-size: 12px; font-weight: 500; white-space: nowrap; margin-right: 3px; font-variant-numeric: tabular-nums; }
 .g .t .ch:not(:last-child)::after { content: ","; }
 .g .t .ch.none { color: var(--muted); font-style: italic; }
+/* „Belegt“: Platz ist besetzt, ohne Modell und Charge */
+.g .t.belegt, .g.half:not(.free) .t.belegt, .chip.belegt, .k-belegt {
+  background: repeating-linear-gradient(135deg, var(--tag) 0 4px, transparent 4px 8px);
+  border: 1px solid var(--line-strong);
+}
+.g .t.belegt, .g.half:not(.free) .t.belegt {
+  font-family: var(--f-sign); font-weight: 700; font-size: 13px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); padding: 0 6px; border-radius: 5px;
+}
+.chip.belegt { font-family: var(--f-body); font-size: 14px; font-weight: 700; letter-spacing: .04em; color: var(--muted); }
+.chip.belegt[aria-pressed="true"] { background: var(--mark); color: var(--mark-ink); border-color: var(--mark); }
+.model.belegt .nr { color: var(--muted); letter-spacing: .04em; }
 
 /* Zwischenplatz: sitzt genau auf der Grenze zweier Gassen */
 .seam { position: relative; flex: 0 0 0; height: 0; z-index: 3; }
@@ -539,7 +551,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     <svg width="20" height="20" viewBox="0 0 20 20"><g fill="#1b2129"><rect x="2" y="3" width="6" height="3" rx="1"></rect><rect x="2" y="8.5" width="6" height="3" rx="1"></rect><rect x="2" y="14" width="6" height="3" rx="1"></rect><rect x="12" y="3" width="6" height="3" rx="1"></rect><rect x="12" y="8.5" width="6" height="3" rx="1"></rect><rect x="12" y="14" width="6" height="3" rx="1"></rect></g></svg>
   </span>
   <div class="name">Gassenplan</div>
-  <div class="ver"><span class="app-version">Version 2.2</span> · <b>Alpha</b></div>
+  <div class="ver"><span class="app-version">Version 2.3</span> · <b>Alpha</b></div>
   <div class="dev">Entwickelt von Kadir Atak</div>
 </div>
 
@@ -596,6 +608,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
         <ul>
           <li><i class="k k-gasse"></i>Gasse</li>
           <li><i class="k k-half"></i>Zwischenplatz</li>
+          <li><i class="k k-belegt"></i>Belegt</li>
           <li><i class="k k-plus">+</i>Mittig eintragen</li>
         </ul>
         <p>Rechts 1 → 19<br>Links 20 → 31</p>
@@ -608,7 +621,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   </div><!--/plan-->
 
   <div class="end end-back" id="end-back"><span class="door"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5V2.5h7v10M9.5 12.5h2M6.5 7.5h.01"></path></svg>Eingang · hinten</span></div>
-  <div class="version">Gassenplan <span class="app-version">Version 2.2</span> · Alpha</div>
+  <div class="version">Gassenplan <span class="app-version">Version 2.3</span> · Alpha</div>
 </div>
 
 <div class="scrim" id="scrim" hidden=""></div>
@@ -639,7 +652,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   <div class="sheet-in">
     <div class="sheet-head">
       <div class="sheet-title">
-        <div class="label">Gassenplan · <span class="app-version">Version 2.2</span> · Alpha</div>
+        <div class="label">Gassenplan · <span class="app-version">Version 2.3</span> · Alpha</div>
         <h2 id="settings-h">Einstellungen und Hilfe</h2>
       </div>
       <button class="icon-btn" id="close-settings" type="button" aria-label="Schließen">
@@ -684,7 +697,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 (() => {
   const SOURCE = '<!doctype html>\n' + document.documentElement.outerHTML;
   // Version: bei jeder Verbesserung erhöhen (siehe CHANGELOG.md)
-  const APP_VERSION = '2.2', APP_STAGE = 'Alpha';
+  const APP_VERSION = '2.3', APP_STAGE = 'Alpha';
   const TOTAL = 31, RIGHT_END = 19;
   const $ = id => document.getElementById(id);
   document.querySelectorAll('.app-version').forEach(e => { e.textContent = 'Version ' + APP_VERSION; });
@@ -742,7 +755,11 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   const sideOf = n => n <= RIGHT_END ? 'rechts' : 'links';
   const fromFront = n => n <= RIGHT_END ? n : TOTAL + 1 - n;
   const sideCount = n => n <= RIGHT_END ? RIGHT_END : TOTAL - RIGHT_END;
-  const modelPos = nr => { const m = state.models.find(x => x.nr === nr); return m ? m.pos : 9999; };
+  // „Belegt“ ist kein echtes Modell: markiert einen besetzten Platz ohne Modell und Charge
+  const BELEGT = 'belegt';
+  const isBelegt = nr => nr === BELEGT;
+  const modelName = nr => isBelegt(nr) ? 'Belegt' : 'Modell ' + nr;
+  const modelPos = nr => { if (isBelegt(nr)) return 9998; const m = state.models.find(x => x.nr === nr); return m ? m.pos : 9999; };
   const placementsIn = n => state.placements
     .filter(p => p.gasse === n)
     .sort((a, b) => modelPos(a.modell) - modelPos(b.modell) || a.modell.localeCompare(b.modell));
@@ -807,7 +824,9 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
         chargen += ch.length;
         const key = p.id + '|' + ch.join(',');
         tags.add(key);
-        stack.append(el('span', { class: 't' + (hitM.has(p.id) ? ' hl' : '') + (seen.ready && !seen.tags.has(key) ? ' pop' : '') },
+        const cls = (hitM.has(p.id) ? ' hl' : '') + (seen.ready && !seen.tags.has(key) ? ' pop' : '');
+        if (isBelegt(p.modell)) { stack.append(el('span', { class: 't belegt' + cls }, 'Belegt')); continue; }
+        stack.append(el('span', { class: 't' + cls },
           el('b', {}, p.modell),
           ch.length
             ? ch.map(c => el('span', { class: 'ch' + (q && c.toLowerCase().includes(q) ? ' hl' : '') }, c))
@@ -819,7 +838,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
       b.classList.toggle('match', hitG.has(n));
       b.setAttribute('aria-pressed', String(state.current === n));
       b.setAttribute('aria-label', (isHalf(n) ? 'Zwischen Gasse ' + (n - 0.5) + ' und ' + (n + 0.5) : 'Gasse ' + n) + (ps.length
-        ? ', ' + ps.map(p => 'Modell ' + p.modell + ((p.chargen || []).length ? ' Charge ' + p.chargen.join(', ') : ' ohne Charge')).join('; ')
+        ? ', ' + ps.map(p => isBelegt(p.modell) ? 'belegt' : 'Modell ' + p.modell + ((p.chargen || []).length ? ' Charge ' + p.chargen.join(', ') : ' ohne Charge')).join('; ')
         : ', leer'));
     }
     seen.tags = tags;
@@ -850,6 +869,14 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
           },
         }, m.nr));
       }
+      chips.append(el('button', {
+        type: 'button', class: 'chip belegt', 'aria-pressed': String(state.filterModel === BELEGT),
+        onclick: () => {
+          state.filterModel = state.filterModel === BELEGT ? null : BELEGT;
+          state.query = ''; $('q').value = ''; $('q-clear').hidden = true;
+          render();
+        },
+      }, 'Belegt'));
       if (state.canWrite) {
         if (state.addingModel) {
           const inp = el('input', { id: 'new-model', type: 'text', inputmode: 'numeric', placeholder: 'Nr.', 'aria-label': 'Neue Modellnummer', autocomplete: 'off' });
@@ -875,7 +902,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     if (wasHidden) { res.style.animation = 'none'; void res.offsetWidth; res.style.animation = ''; }
     if (!hits.length) {
       res.append(el('div', { class: 'none' }, state.filterModel
-        ? 'Modell ' + state.filterModel + ' steht noch in keiner Gasse.'
+        ? (isBelegt(state.filterModel) ? 'Noch kein Platz als belegt markiert.' : 'Modell ' + state.filterModel + ' steht noch in keiner Gasse.')
         : 'Nichts gefunden für „' + state.query.trim() + '“.'));
       return;
     }
@@ -883,7 +910,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     hits.slice().sort((a, b) => a.gasse - b.gasse).forEach(p => {
       const ch = (p.chargen || []);
       const matchCh = q ? ch.filter(c => c.toLowerCase().includes(q)) : ch;
-      const detail = 'Modell ' + p.modell + (matchCh.length ? ' · Charge ' + matchCh.join(', ') : '');
+      const detail = modelName(p.modell) + (matchCh.length ? ' · Charge ' + matchCh.join(', ') : '');
       res.append(el('button', { type: 'button', class: 'hit', onclick: () => open(p.gasse) },
         el('b', { class: isHalf(p.gasse) ? 'half' : '' }, label(p.gasse)), el('span', {}, (isHalf(p.gasse) ? 'Mittig · ' : '') + detail)));
     });
@@ -988,14 +1015,19 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 
     for (const p of ps) {
       const rmKey = 'rm:' + p.id;
-      const card = el('div', { class: 'model' },
+      const card = el('div', { class: 'model' + (isBelegt(p.modell) ? ' belegt' : '') },
         el('div', { class: 'model-head' },
-          el('div', { class: 'nr' }, el('small', {}, 'Modell'), p.modell),
+          isBelegt(p.modell) ? el('div', { class: 'nr' }, 'Belegt') : el('div', { class: 'nr' }, el('small', {}, 'Modell'), p.modell),
           state.canWrite && el('button', {
             type: 'button', class: 'linkbtn' + (state.armed === rmKey ? ' armed' : ''),
             onclick: () => state.armed === rmKey ? removePlacement(p) : arm(rmKey),
           }, state.armed === rmKey ? 'Wirklich entfernen?' : 'Entfernen')));
       if (sameView) card.style.animation = 'none';
+      if (isBelegt(p.modell)) {
+        card.append(el('span', { class: 'hint' }, isHalf(n) ? 'Der Platz mittig auf beiden Gassen ist belegt.' : 'Diese Gasse ist als belegt markiert.'));
+        body.append(card);
+        continue;
+      }
 
       const list = el('div', { class: 'chargen' });
       const ch = p.chargen || [];
@@ -1025,11 +1057,12 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     if (state.canWrite) {
       const here = new Set(ps.map(p => p.modell));
       const free = state.models.filter(m => !here.has(m.nr));
-      if (free.length) {
+      const opts = free.map(m => el('button', { type: 'button', class: 'chip', onclick: () => addPlacement(n, m.nr) }, '+ ' + m.nr));
+      if (!here.has(BELEGT)) opts.push(el('button', { type: 'button', class: 'chip belegt', onclick: () => addPlacement(n, BELEGT) }, 'Belegt'));
+      if (opts.length) {
         body.append(el('div', { class: 'place' },
           el('div', { class: 'label' }, 'Modell ' + placeName(n) + ' stellen'),
-          el('div', { class: 'chips' }, free.map(m =>
-            el('button', { type: 'button', class: 'chip', onclick: () => addPlacement(n, m.nr) }, '+ ' + m.nr)))));
+          el('div', { class: 'chips' }, opts)));
       }
     }
 
@@ -1083,6 +1116,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     const nr = String(raw || '').trim();
     if (!/^[A-Za-z0-9._-]{1,20}$/.test(nr)) { toast('Bitte eine Modellnummer ohne Leerzeichen eingeben.'); return; }
     if (state.models.some(m => m.nr === nr)) { toast('Modell ' + nr + ' gibt es schon.'); return; }
+    if (nr.toLowerCase() === BELEGT) { toast('„Belegt“ gibt es schon als eigene Auswahl.'); return; }
     const pos = state.models.reduce((a, m) => Math.max(a, m.pos || 0), 0) + 1;
     try {
       await state.db.collection('models').doc(nr).set({ nr, pos });
@@ -1097,7 +1131,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   }
   async function removePlacement(p) {
     state.armed = null;
-    try { await state.db.collection('belegung').doc(p.id).delete(); toast('Modell ' + p.modell + ' ' + placeName(p.gasse) + ' entfernt.'); }
+    try { await state.db.collection('belegung').doc(p.id).delete(); toast(isBelegt(p.modell) ? 'Belegt ' + placeName(p.gasse) + ' entfernt.' : 'Modell ' + p.modell + ' ' + placeName(p.gasse) + ' entfernt.'); }
     catch (e) { fail(e); }
   }
   async function addCharge(p, raw, inpId) {

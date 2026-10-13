@@ -3,6 +3,12 @@
 Die aktuelle Version steht in `quelle/gassenplan.html` (`APP_VERSION`) und wird beim Start der App
 kurz eingeblendet. Bei jeder Verbesserung wird sie erhöht.
 
+Sicherungen: Der Zweig `backup-2.2` enthält Version 2.2 unverändert. Zum Zurücksetzen wird `main` auf diesen Stand gebracht.
+
+## 2.3 · Alpha
+- Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge
+- „Belegt“ als Filter-Knopf oben und in der Übersicht
+
 ## 2.2 · Alpha
 - Startbild nennt den Entwickler: Kadir Atak
 
