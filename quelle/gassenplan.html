@@ -556,7 +556,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     <svg width="20" height="20" viewBox="0 0 20 20"><g fill="#1b2129"><rect x="2" y="3" width="6" height="3" rx="1"/><rect x="2" y="8.5" width="6" height="3" rx="1"/><rect x="2" y="14" width="6" height="3" rx="1"/><rect x="12" y="3" width="6" height="3" rx="1"/><rect x="12" y="8.5" width="6" height="3" rx="1"/><rect x="12" y="14" width="6" height="3" rx="1"/></g></svg>
   </span>
   <div class="name">Gassenplan</div>
-  <div class="ver"><span class="app-version">Version 2.6</span> · <b>Alpha</b></div>
+  <div class="ver"><span class="app-version">Version 2.7</span> · <b>Alpha</b></div>
   <div class="dev">Entwickelt von Kadir Atak</div>
 </div>
 
@@ -623,7 +623,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   </div>
 
   <div class="end end-back" id="end-back"><span class="door"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5V2.5h7v10M9.5 12.5h2M6.5 7.5h.01"/></svg>Eingang · hinten</span></div>
-  <div class="version">Gassenplan <span class="app-version">Version 2.6</span> · Alpha</div>
+  <div class="version">Gassenplan <span class="app-version">Version 2.7</span> · Alpha</div>
 </div>
 
 <div class="scrim" id="scrim" hidden></div>
@@ -654,7 +654,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   <div class="sheet-in">
     <div class="sheet-head">
       <div class="sheet-title">
-        <div class="label">Gassenplan · <span class="app-version">Version 2.6</span> · Alpha</div>
+        <div class="label">Gassenplan · <span class="app-version">Version 2.7</span> · Alpha</div>
         <h2 id="settings-h">Einstellungen und Hilfe</h2>
       </div>
       <button class="icon-btn" id="close-settings" type="button" aria-label="Schließen">
@@ -676,10 +676,8 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
         <div class="label">Datenschutz</div>
         <ul>
           <li>Gespeichert werden nur Lagerangaben: Gasse, Modell, Charge und der Zeitpunkt der Änderung. Namen oder Benutzerkonten werden nicht erfasst.</li>
-          <li>Änderungen an Einträgen werden mit Datum und Uhrzeit protokolliert, ohne Namen. Einsehen kann dieses Protokoll nur der Verantwortliche. Einträge im Protokoll werden nach 90 Tagen gelöscht.</li>
-          <li>In der Testphase liegen die Daten in einem privaten Projekt bei GitHub (USA). GitHub bewahrt frühere Stände des Plans als Versionsverlauf auf und verarbeitet beim Abgleich technisch bedingt die IP-Adresse des Handys.</li>
+          <li>Änderungen an Einträgen werden mit Datum und Uhrzeit protokolliert, ohne Namen. Einsehen kann dieses Protokoll nur eine berechtigte Person. Einträge im Protokoll werden nach 90 Tagen gelöscht.</li>
           <li>Auf dem Handy speichert die App nur, was für den Betrieb nötig ist: den aktuellen Stand und den Zugangsschlüssel. Es gibt kein Tracking und keine Werbung.</li>
-          <li>Verantwortlich und Ansprechpartner: Kadir Atak.</li>
         </ul>
       </section>
     </div>
@@ -691,7 +689,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 <script>
 (() => {
   // Version: bei jeder Verbesserung erhöhen (siehe CHANGELOG.md)
-  const APP_VERSION = '2.6', APP_STAGE = 'Alpha';
+  const APP_VERSION = '2.7', APP_STAGE = 'Alpha';
   // App-Versionen mit Datum: wird beim Bauen aus CHANGELOG.md eingesetzt
   const VERSION_HISTORY = /*VERSION_HISTORY*/[];
   const TOTAL = 31, RIGHT_END = 19;
@@ -703,7 +701,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   // Was ist neu: erscheint bei jedem Öffnen, bis man es schließt; bei der nächsten Version wieder
   // silent: true = Update ohne Fenster „Was ist neu“ (nur wenn Kadir Atak das so will)
   const WHATS_NEW = {
-    version: '2.6', from: '2.5', silent: true,
+    version: '2.7', from: '2.6', silent: true,
     items: [],
   };
   const NEWS_KEY = 'gassenplan-neu-gelesen';

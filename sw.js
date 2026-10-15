@@ -1,6 +1,6 @@
 // Gassenplan: hält die App für den Betrieb ohne Internet bereit.
 // Antwortet sofort aus dem Speicher und lädt im Hintergrund die neueste Fassung nach.
-const CACHE = 'gassenplan-v10';
+const CACHE = 'gassenplan-v11';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
