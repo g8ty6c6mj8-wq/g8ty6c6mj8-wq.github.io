@@ -10,8 +10,8 @@ const fs = require('fs');
   await page.reload(); await page.waitForTimeout(2200);
   if (await page.locator('#news-close').count()) await page.click('#news-close');
   const gasse = n => page.locator('.rack > .g', { has: page.locator('.plate', { hasText: new RegExp('^' + n + '$') }) });
-  // Gasse 12 als belegt markieren
-  await gasse(12).click(); await page.waitForTimeout(500);
+  // Gasse 2 als belegt markieren
+  await gasse(2).click(); await page.waitForTimeout(500);
   await page.locator('#sheet-body .chip.belegt').click(); await page.waitForTimeout(400);
   const card = await page.locator('#sheet-body .model.belegt').innerText();
   await page.click('#close'); await page.waitForTimeout(400);
@@ -19,7 +19,7 @@ const fs = require('fs');
   await page.getByRole('button', { name: /^Zwischen Gasse 3 und 4/ }).click(); await page.waitForTimeout(500);
   await page.locator('#sheet-body .chip.belegt').click(); await page.waitForTimeout(400);
   await page.click('#close'); await page.waitForTimeout(400);
-  const g12 = await gasse(12).innerText();
+  const g2 = await gasse(2).innerText();
   const seam = await page.getByRole('button', { name: /^Zwischen Gasse 3 und 4/ }).innerText();
   // Filter
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -31,11 +31,11 @@ const fs = require('fs');
   await page.screenshot({ path: 'belegt-plan.png', clip: { x: 0, y: box.y, width: 390, height: 640 }, fullPage: true });
   // Neustart: bleibt erhalten; Entfernen
   await page.reload(); await page.waitForTimeout(2200);
-  const after = await gasse(12).innerText();
-  await gasse(12).click(); await page.waitForTimeout(500);
+  const after = await gasse(2).innerText();
+  await gasse(2).click(); await page.waitForTimeout(500);
   await page.getByRole('button', { name: 'Entfernen', exact: true }).click(); await page.getByRole('button', { name: 'Wirklich entfernen?' }).click(); await page.waitForTimeout(400);
   const toast = await page.locator('#toast').innerText();
   await page.click('#close'); await page.waitForTimeout(400);
-  console.log(JSON.stringify({ card, g12, seam, res, after, toast, removed: await gasse(12).innerText(), heights: await page.evaluate(() => [...new Set([...document.querySelectorAll('.rack > .g')].map(a => Math.round(a.getBoundingClientRect().height)))]) }), errs);
+  console.log(JSON.stringify({ card, g2, seam, res, after, toast, removed: await gasse(2).innerText(), heights: await page.evaluate(() => [...new Set([...document.querySelectorAll('.rack > .g')].map(a => Math.round(a.getBoundingClientRect().height)))]) }), errs);
   await browser.close();
 })();

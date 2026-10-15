@@ -595,7 +595,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     <svg width="20" height="20" viewBox="0 0 20 20"><g fill="#1b2129"><rect x="2" y="3" width="6" height="3" rx="1"></rect><rect x="2" y="8.5" width="6" height="3" rx="1"></rect><rect x="2" y="14" width="6" height="3" rx="1"></rect><rect x="12" y="3" width="6" height="3" rx="1"></rect><rect x="12" y="8.5" width="6" height="3" rx="1"></rect><rect x="12" y="14" width="6" height="3" rx="1"></rect></g></svg>
   </span>
   <div class="name">Gassenplan</div>
-  <div class="ver"><span class="app-version">Version 2.5</span> · <b>Alpha</b></div>
+  <div class="ver"><span class="app-version">Version 2.6</span> · <b>Alpha</b></div>
   <div class="dev">Entwickelt von Kadir Atak</div>
 </div>
 
@@ -665,7 +665,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   </div><!--/plan-->
 
   <div class="end end-back" id="end-back"><span class="door"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5V2.5h7v10M9.5 12.5h2M6.5 7.5h.01"></path></svg>Eingang · hinten</span></div>
-  <div class="version">Gassenplan <span class="app-version">Version 2.5</span> · Alpha</div>
+  <div class="version">Gassenplan <span class="app-version">Version 2.6</span> · Alpha</div>
 </div>
 
 <div class="scrim" id="scrim" hidden=""></div>
@@ -696,7 +696,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   <div class="sheet-in">
     <div class="sheet-head">
       <div class="sheet-title">
-        <div class="label">Gassenplan · <span class="app-version">Version 2.5</span> · Alpha</div>
+        <div class="label">Gassenplan · <span class="app-version">Version 2.6</span> · Alpha</div>
         <h2 id="settings-h">Einstellungen und Hilfe</h2>
       </div>
       <button class="icon-btn" id="close-settings" type="button" aria-label="Schließen">
@@ -751,6 +751,16 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
           <li>Oben findest du jedes Modell und jede Charge über die Suche. Ein Modell-Knopf zeigt alle Gassen, in denen es steht.</li>
         </ul>
       </section>
+      <section class="help" id="datenschutz">
+        <div class="label">Datenschutz</div>
+        <ul>
+          <li>Gespeichert werden nur Lagerangaben: Gasse, Modell, Charge und der Zeitpunkt der Änderung. Namen oder Benutzerkonten werden nicht erfasst.</li>
+          <li>Änderungen an Einträgen werden mit Datum und Uhrzeit protokolliert, ohne Namen. Einsehen kann dieses Protokoll nur der Verantwortliche. Einträge im Protokoll werden nach 90 Tagen gelöscht.</li>
+          <li>In der Testphase liegen die Daten in einem privaten Projekt bei GitHub (USA). GitHub bewahrt frühere Stände des Plans als Versionsverlauf auf und verarbeitet beim Abgleich technisch bedingt die IP-Adresse des Handys.</li>
+          <li>Auf dem Handy speichert die App nur, was für den Betrieb nötig ist: den aktuellen Stand und den Zugangsschlüssel. Es gibt kein Tracking und keine Werbung.</li>
+          <li>Verantwortlich und Ansprechpartner: Kadir Atak.</li>
+        </ul>
+      </section>
     </div>
   </div>
 </div>
@@ -761,9 +771,9 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 (() => {
   const SOURCE = '<!doctype html>\n' + document.documentElement.outerHTML;
   // Version: bei jeder Verbesserung erhöhen (siehe CHANGELOG.md)
-  const APP_VERSION = '2.5', APP_STAGE = 'Alpha';
+  const APP_VERSION = '2.6', APP_STAGE = 'Alpha';
   // App-Versionen mit Datum: wird beim Bauen aus CHANGELOG.md eingesetzt
-  const VERSION_HISTORY = [{"v": "2.5", "d": "13.10.2026", "t": "Interne Verbesserungen, ohne Hinweisfenster"}, {"v": "2.4", "d": "13.10.2026", "t": "Interne Verbesserungen für den Verantwortlichen"}, {"v": "2.3", "d": "13.10.2026", "t": "Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge"}, {"v": "2.2", "d": "12.10.2026", "t": "Startbild nennt den Entwickler: Kadir Atak"}, {"v": "2.1", "d": "12.10.2026", "t": "Mehr Abstand zwischen Zwischenplätzen und den Einträgen der Gassen daneben"}, {"v": "2.0", "d": "12.10.2026", "t": "Neues Erscheinungsbild: Kopfleiste mit Live-Status, Regale als Karten, Übersicht vorne links"}, {"v": "1.x", "d": "12.10.2026", "t": "1.9 Zwischenplätze blau, Schild abgesetzt von der Gassennummer, flachere Gassen"}];
+  const VERSION_HISTORY = [{"v": "2.6", "d": "15.10.2026", "t": "Datenschutzhinweise in den Einstellungen"}, {"v": "2.5", "d": "13.10.2026", "t": "Interne Verbesserungen, ohne Hinweisfenster"}, {"v": "2.4", "d": "13.10.2026", "t": "Interne Verbesserungen für den Verantwortlichen"}, {"v": "2.3", "d": "13.10.2026", "t": "Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge"}, {"v": "2.2", "d": "12.10.2026", "t": "Startbild nennt den Entwickler: Kadir Atak"}, {"v": "2.1", "d": "12.10.2026", "t": "Mehr Abstand zwischen Zwischenplätzen und den Einträgen der Gassen daneben"}, {"v": "2.0", "d": "12.10.2026", "t": "Neues Erscheinungsbild: Kopfleiste mit Live-Status, Regale als Karten, Übersicht vorne links"}, {"v": "1.x", "d": "12.10.2026", "t": "1.9 Zwischenplätze blau, Schild abgesetzt von der Gassennummer, flachere Gassen"}];
   const TOTAL = 31, RIGHT_END = 19;
   const $ = id => document.getElementById(id);
   document.querySelectorAll('.app-version').forEach(e => { e.textContent = 'Version ' + APP_VERSION; });
@@ -773,7 +783,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   // Was ist neu: erscheint bei jedem Öffnen, bis man es schließt; bei der nächsten Version wieder
   // silent: true = Update ohne Fenster „Was ist neu“ (nur wenn Kadir Atak das so will)
   const WHATS_NEW = {
-    version: '2.5', from: '2.4', silent: true,
+    version: '2.6', from: '2.5', silent: true,
     items: [],
   };
   const NEWS_KEY = 'gassenplan-neu-gelesen';
@@ -1267,7 +1277,8 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     ? Object.keys(v).sort().reduce((r, x) => (r[x] = v[x], r), {}) : v);
   const pick = s => ({ models: (s && s.models) || {}, belegung: (s && s.belegung) || {}, deleted: (s && s.deleted) || {},
     log: (s && s.log) || [], admin: (s && s.admin) || null });
-  const LOG_MAX = 1500;
+  const LOG_MAX = 1500, LOG_DAYS = 90;
+  const freshLog = log => { const cut = Date.now() - LOG_DAYS * 864e5; return log.filter(e => e && e.ts >= cut); };
   let persistent = true;
   let mem = null;
 
@@ -1351,7 +1362,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     // Verlauf: alle Einträge beider Seiten, nach Zeit sortiert, die neuesten LOG_MAX behalten
     const logMap = new Map();
     for (const e of [...((a && a.log) || []), ...((b && b.log) || [])]) if (e && e.id) logMap.set(e.id, e);
-    const log = [...logMap.values()].sort((x, y) => (x.ts - y.ts) || (x.id < y.id ? -1 : 1)).slice(-LOG_MAX);
+    const log = freshLog([...logMap.values()]).sort((x, y) => (x.ts - y.ts) || (x.id < y.id ? -1 : 1)).slice(-LOG_MAX);
     // Admin-Schlüssel: der zuletzt festgelegte gilt
     const aa = a && a.admin, ba = b && b.admin;
     const admin = !aa ? (ba || null) : !ba ? aa : ((ba.ts || 0) > (aa.ts || 0) ? ba : aa);
@@ -1640,7 +1651,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
       const key = await pubKey();
       if (!key) return;   // noch kein Admin-Schlüssel festgelegt
       const data = await subtle.encrypt({ name: 'RSA-OAEP' }, key, enc.encode(JSON.stringify(entry)));
-      mem.log = (mem.log || []).concat({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), ts: Date.now(), e: ab2b64(data) }).slice(-LOG_MAX);
+      mem.log = freshLog(mem.log || []).concat({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), ts: Date.now(), e: ab2b64(data) }).slice(-LOG_MAX);
       mem.pending = true;
       mem.rev = (mem.rev || 0) + 1;
       saveStore();

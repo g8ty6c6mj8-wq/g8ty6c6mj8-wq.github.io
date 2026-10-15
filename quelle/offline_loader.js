@@ -9,7 +9,8 @@
     ? Object.keys(v).sort().reduce((r, x) => (r[x] = v[x], r), {}) : v);
   const pick = s => ({ models: (s && s.models) || {}, belegung: (s && s.belegung) || {}, deleted: (s && s.deleted) || {},
     log: (s && s.log) || [], admin: (s && s.admin) || null });
-  const LOG_MAX = 1500;
+  const LOG_MAX = 1500, LOG_DAYS = 90;
+  const freshLog = log => { const cut = Date.now() - LOG_DAYS * 864e5; return log.filter(e => e && e.ts >= cut); };
   let persistent = true;
   let mem = null;
 
@@ -93,7 +94,7 @@
     // Verlauf: alle Einträge beider Seiten, nach Zeit sortiert, die neuesten LOG_MAX behalten
     const logMap = new Map();
     for (const e of [...((a && a.log) || []), ...((b && b.log) || [])]) if (e && e.id) logMap.set(e.id, e);
-    const log = [...logMap.values()].sort((x, y) => (x.ts - y.ts) || (x.id < y.id ? -1 : 1)).slice(-LOG_MAX);
+    const log = freshLog([...logMap.values()]).sort((x, y) => (x.ts - y.ts) || (x.id < y.id ? -1 : 1)).slice(-LOG_MAX);
     // Admin-Schlüssel: der zuletzt festgelegte gilt
     const aa = a && a.admin, ba = b && b.admin;
     const admin = !aa ? (ba || null) : !ba ? aa : ((ba.ts || 0) > (aa.ts || 0) ? ba : aa);
@@ -382,7 +383,7 @@
       const key = await pubKey();
       if (!key) return;   // noch kein Admin-Schlüssel festgelegt
       const data = await subtle.encrypt({ name: 'RSA-OAEP' }, key, enc.encode(JSON.stringify(entry)));
-      mem.log = (mem.log || []).concat({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), ts: Date.now(), e: ab2b64(data) }).slice(-LOG_MAX);
+      mem.log = freshLog(mem.log || []).concat({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8), ts: Date.now(), e: ab2b64(data) }).slice(-LOG_MAX);
       mem.pending = true;
       mem.rev = (mem.rev || 0) + 1;
       saveStore();

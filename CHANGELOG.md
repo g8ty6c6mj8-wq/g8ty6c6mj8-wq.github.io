@@ -5,6 +5,10 @@ kurz eingeblendet. Bei jeder Verbesserung wird sie erhöht.
 
 Sicherungen: Für jede Version gibt es einen Zweig `backup-<Version>` (z. B. `backup-2.3`) mit genau diesem Stand. Zum Zurücksetzen wird `main` auf diesen Stand gebracht.
 
+## 2.6 · Alpha · 15.10.2026
+- Datenschutzhinweise in den Einstellungen
+- Protokolleinträge werden nach 90 Tagen gelöscht
+
 ## 2.5 · Alpha · 13.10.2026
 - Interne Verbesserungen, ohne Hinweisfenster
 
