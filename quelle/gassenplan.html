@@ -559,7 +559,8 @@ body { height: 100%; overflow: hidden; display: flex; flex-direction: column; ov
   white-space: normal; text-align: left; line-height: 1.15; padding-block: 5px; height: auto; min-height: 28px;
   animation: pop .35s var(--ease) both;
 }
-.wrap { flex: 1 1 auto; min-height: 0; width: 100%; padding-block: 6px; gap: 0; }
+/* oben Abstand: iOS zeichnet unter der Statusleiste einen Unschärfe-Streifen */
+.wrap { flex: 1 1 auto; min-height: 0; width: 100%; padding-block: 26px 6px; gap: 0; }
 .floor {
   flex: 1 1 auto; min-height: 0; grid-template-rows: 1fr;
   transform: translateY(var(--shift, 0px)) scale(var(--fit, 1)); transform-origin: top center;
