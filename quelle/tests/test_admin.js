@@ -43,7 +43,7 @@ const remoteKeys = () => remote.content ? Object.keys(JSON.parse(remote.content)
   const errs = [];
   const phone = async name => { const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } }); await ctx.route('https://api.github.com/**', handler); const p = await ctx.newPage(); p.on('pageerror', e => errs.push(name + ': ' + e.message)); await p.goto('http://localhost:8767/'); await p.waitForTimeout(1800); if (await p.locator('#news-close').count()) await p.click('#news-close'); return { ctx, p }; };
   const A = await phone('A'), B = await phone('B');
-  const reveal = async p => { const v = p.locator('.wrap > .version'); await v.scrollIntoViewIfNeeded(); for (let i = 0; i < 5; i++) await v.click({ force: true }); await p.waitForTimeout(900); };
+  const reveal = async p => { const v = p.locator('.legend .version'); await v.scrollIntoViewIfNeeded(); for (let i = 0; i < 5; i++) await v.click({ force: true }); await p.waitForTimeout(900); };
   await connect(A.p, TOKEN); await connect(B.p, TOKEN);
   // A legt den Admin-Schlüssel fest (versteckter Zugang)
   await reveal(A.p);
@@ -69,7 +69,8 @@ const remoteKeys = () => remote.content ? Object.keys(JSON.parse(remote.content)
   await B.p.fill('#admin-pw', 'geheim123'); await B.p.click('#admin-go'); await B.p.waitForTimeout(1500);
   const right = await B.p.locator('#admin-view').isVisible();
   const remoteText = remote.content || '';
-  const plain = ['793', 'C-777', 'Belegt', 'Gasse'].filter(w => JSON.stringify(JSON.parse(remoteText).log || []).includes(w));
+  // Zeitstempel nicht mitprüfen: darin kann eine Modellnummer zufällig vorkommen (z. B. 1793…)
+  const plain = ['793', 'C-777', 'Belegt', 'Gasse'].filter(w => JSON.stringify((JSON.parse(remoteText).log || []).map(({ ts, ...rest }) => rest)).includes(w));
   const logCount = (JSON.parse(remoteText).log || []).length;
   console.log(JSON.stringify({ st0, st1, logA, versions, wrong, right, logCount, klartextImLog: plain }, null, 1));
   console.log('Fehler:', errs);

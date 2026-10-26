@@ -1,9 +1,16 @@
 # Gassenplan – Versionen
 
 Die aktuelle Version steht in `quelle/gassenplan.html` (`APP_VERSION`) und wird beim Start der App
-kurz eingeblendet. Bei jeder Verbesserung wird sie erhöht.
+kurz eingeblendet. Ab 3.00 wie bei Jarvis: jede Änderung zählt um 0,01 weiter (3.01, 3.02 …),
+große Umbauten springen auf die nächste ganze Zahl.
 
 Sicherungen: Für jede Version gibt es einen Zweig `backup-<Version>` (z. B. `backup-2.3`) mit genau diesem Stand. Zum Zurücksetzen wird `main` auf diesen Stand gebracht.
+
+## 3.00 · Alpha · 26.10.2026
+- Ganzer Plan auf einer Seite ohne Wischen, Gassenbreite wie bisher
+- Einträge blau umrandet, Zwischenplätze grau, ruhigeres Aussehen
+- Name, Suche und Einstellungen oben links, verschiebbarer Knopf zum Wechseln der Räume (Knorr-Ansicht, Versand Mechanik, Versand Fort-Knox)
+- „Was ist neu“ muss gelesen und bestätigt werden; offene Apps laden neue Fassungen selbst
 
 ## 2.8 · Alpha · 26.10.2026
 - Updates werden zuverlässiger geladen

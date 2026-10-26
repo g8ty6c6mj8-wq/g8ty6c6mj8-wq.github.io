@@ -8,7 +8,7 @@ const { spawn } = require('child_process');
   const errs = []; page.on('pageerror', e => errs.push(e.message));
   await page.goto('http://localhost:8769/'); await page.waitForTimeout(2200); if (await page.locator('#news-close').count()) await page.click('#news-close');
   // Admin-Schlüssel festlegen, dann einen 100 Tage alten Protokolleintrag unterschieben
-  const v = page.locator('.wrap > .version'); await v.scrollIntoViewIfNeeded(); for (let i = 0; i < 5; i++) await v.click({ force: true }); await page.waitForTimeout(800);
+  const v = page.locator('.legend .version'); await v.scrollIntoViewIfNeeded(); for (let i = 0; i < 5; i++) await v.click({ force: true }); await page.waitForTimeout(800);
   await page.fill('#admin-pw', 'geheim123'); await page.fill('#admin-pw2', 'geheim123'); await page.click('#admin-go'); await page.waitForTimeout(2500);
   await page.click('#close-settings'); await page.waitForTimeout(500);
   await page.evaluate(() => { const k = 'gassenplan-offline-v1'; const m = JSON.parse(localStorage.getItem(k)); m.log = [{ id: 'alt1', ts: Date.now() - 100 * 864e5, e: 'x' }]; localStorage.setItem(k, JSON.stringify(m)); });

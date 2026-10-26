@@ -454,7 +454,7 @@
   }
   if ($('admin') && subtle) {
     $('admin').hidden = !isAdminDevice();
-    const ver = document.querySelector('.wrap > .version');
+    const ver = document.querySelector('.legend .version');
     let taps = [];
     if (ver) ver.addEventListener('click', () => {
       const now = Date.now();
@@ -509,11 +509,19 @@
   if (location.protocol === 'https:' || location.hostname === 'localhost') {
     if ('serviceWorker' in navigator) {
       const hadController = !!navigator.serviceWorker.controller;
-      let reloaded = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (hadController && !reloaded) { reloaded = true; location.reload(); }
-      });
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+      let reloaded = false, pending = false;
+      // Neue Fassung sofort übernehmen, aber nicht mitten im Eintragen: dann erst, wenn das Fenster zu ist
+      const busy = () => !!state.current || (document.activeElement && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName));
+      const restart = () => { if (reloaded) return; if (busy() && document.visibilityState === 'visible') { pending = true; return; } reloaded = true; location.reload(); };
+      navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) restart(); });
+      setInterval(() => { if (pending) restart(); }, 2000);
+      document.addEventListener('visibilitychange', () => { if (pending) restart(); });
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        // nach neuer Fassung schauen: beim Zurückkehren in die App und alle 5 Minuten
+        const check = () => reg.update().catch(() => {});
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') check(); });
+        setInterval(check, 5 * 60 * 1000);
+      }).catch(() => {});
     }
     const standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
     if (!standalone && /iPhone|iPad|iPod/.test(navigator.userAgent)) $('install-hint').hidden = false;

@@ -23,10 +23,12 @@ const fs = require('fs');
   const seam = await page.getByRole('button', { name: /^Zwischen Gasse 3 und 4/ }).innerText();
   // Filter
   await page.evaluate(() => window.scrollTo(0, 0));
+  await page.click('#open-search'); await page.waitForTimeout(400);
   await page.locator('#model-chips .chip.belegt').click(); await page.waitForTimeout(500);
   const res = await page.locator('#results').innerText();
   await page.screenshot({ path: 'belegt-filter.png' });
   await page.locator('#model-chips .chip.belegt').click(); await page.waitForTimeout(300);
+  if (await page.locator('#search-panel').isVisible()) await page.click('#search-done');
   const box = await page.locator('#floor').boundingBox();
   await page.screenshot({ path: 'belegt-plan.png', clip: { x: 0, y: box.y, width: 390, height: 640 }, fullPage: true });
   // Neustart: bleibt erhalten; Entfernen

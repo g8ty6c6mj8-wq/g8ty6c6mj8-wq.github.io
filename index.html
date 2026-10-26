@@ -21,8 +21,9 @@
 </style>
 <style>
 /* Layout: Draufsicht auf die Halle. Vorne oben, hinten (Eingang) unten. Rechts 1–19 von vorne nach hinten,
-   links 20–31 von hinten nach vorne, Hauptgang in der Mitte. Feste Kopfleiste mit Live-Status,
-   Regale als Karten, Übersicht im freien Bereich vorne links, Details und Einstellungen als Bottom-Sheets. */
+   links 20–31 von hinten nach vorne, Hauptgang in der Mitte. Alles passt auf eine Bildschirmseite:
+   Name, Suche und Übersicht stehen im freien Bereich vorne links, Details und Einstellungen als Bottom-Sheets,
+   ein verschiebbarer Knopf wechselt den Raum. */
 :root {
   --bg: #edf0f3;
   --floor: #edf0f3;
@@ -533,8 +534,8 @@ button, input { font: inherit; color: inherit; }
   padding: 20px 18px 18px; display: flex; flex-direction: column; gap: 14px;
   animation: rise .45s var(--ease) .05s both;
 }
-.news-card .icon-btn { position: absolute; top: 12px; right: 12px; }
-.news-head { display: flex; align-items: center; gap: 12px; padding-right: 44px; }
+.news-head { display: flex; align-items: center; gap: 12px; }
+.news .btn:disabled { opacity: 1; background: var(--surface-2); color: var(--muted); border-color: var(--line); cursor: default; }
 .news-head .logo { width: 44px; height: 44px; border-radius: 12px; }
 .news-head h2 { margin: 2px 0 0; font-family: var(--f-sign); font-weight: 700; font-size: 26px; line-height: 1; letter-spacing: .02em; }
 .news-head .from { font-size: 13px; color: var(--muted); margin-top: 4px; }
@@ -547,6 +548,188 @@ button, input { font: inherit; color: inherit; }
 .news li b { display: block; font-weight: 600; }
 .news li span { color: var(--muted); font-size: 14px; }
 .news .btn { width: 100%; }
+
+/* ---------- Alles auf einer Bildschirmseite ---------- */
+html { height: 100%; box-sizing: border-box; }
+body { height: 100%; overflow: hidden; display: flex; flex-direction: column; overscroll-behavior: none; }
+/* Kopfleiste sitzt in der freien Ecke links oben (dort ist links neben Gasse 1–7 Platz) */
+.appbar.corner { position: static; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; border: 0; flex: 0 0 auto; margin-bottom: 6px; }
+.corner .appbar-in {
+  padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: 8px 6px;
+  grid-template-areas: "brand" "search";
+}
+.corner .brand { grid-area: brand; gap: 7px; min-width: 0; }
+.corner .brand .logo { width: 28px; height: 28px; border-radius: 8px; }
+.corner .brand .logo svg { width: 17px; height: 17px; }
+.corner .brand h1 { font-size: 19px; }
+.corner .brand .sub { font-size: 11px; margin-top: 1px; }
+.bar-tools { display: contents; }
+.corner .filter-pill, .corner .syncline { grid-column: 1 / -1; }
+/* Suche: kräftige Leiste über die ganze Spalte */
+.search-btn {
+  grid-area: search; min-width: 0; height: 48px; padding: 0 12px 0 6px; border-radius: 14px; cursor: pointer;
+  display: flex; align-items: center; gap: 9px; text-align: left;
+  border: 2px solid var(--mark); background: var(--surface); color: var(--ink); font: inherit;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--mark) 30%, transparent);
+  transition: transform .15s var(--ease), box-shadow .15s;
+}
+.search-btn:active { transform: scale(.97); box-shadow: 0 1px 4px color-mix(in srgb, var(--mark) 30%, transparent); }
+.search-btn .ico { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; background: var(--mark); color: var(--mark-ink); display: grid; place-items: center; }
+.search-btn .lbl { display: flex; flex-direction: column; min-width: 0; line-height: 1.1; }
+.search-btn .lbl b { font-family: var(--f-sign); font-weight: 700; font-size: 18px; letter-spacing: .04em; text-transform: uppercase; }
+.search-btn .lbl small { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.set-btn {
+  display: flex; align-items: center; gap: 7px; width: 100%; height: 32px; padding: 0 10px; border-radius: 9px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 12px; font-weight: 600;
+  box-shadow: var(--shadow-1); transition: transform .15s var(--ease);
+}
+.set-btn:active { transform: scale(.97); }
+.set-btn svg { flex: 0 0 auto; color: var(--muted); }
+.corner .syncline { height: 26px; padding: 0 9px; font-size: 11px; max-width: none; align-self: flex-start; }
+.filter-pill {
+  height: 28px; padding: 0 10px; border-radius: 14px; border: 0; cursor: pointer;
+  background: var(--mark); color: var(--mark-ink); font-family: var(--f-sign); font-weight: 700; font-size: 15px;
+  white-space: normal; text-align: left; line-height: 1.15; padding-block: 5px; height: auto; min-height: 28px;
+  animation: pop .35s var(--ease) both;
+}
+/* oben Abstand: iOS zeichnet unter der Statusleiste einen Unschärfe-Streifen */
+.wrap { flex: 1 1 auto; min-height: 0; width: 100%; padding-block: 26px 6px; gap: 0; }
+.floor {
+  flex: 1 1 auto; min-height: 0; grid-template-rows: 1fr;
+  transform: translateY(var(--shift, 0px)) scale(var(--fit, 1)); transform-origin: top center;
+  transition: transform .35s var(--ease);
+}
+.side.left, .side.right, .corridor { grid-row: 1; min-height: 0; }
+.legend { flex: 0 1 auto; min-height: 0; overflow: hidden; gap: 6px; padding: 8px 9px; margin-bottom: 8px; font-size: 11px; }
+.legend .stats { display: flex; gap: 10px; }
+.legend .stats div { display: block; padding: 0; background: none; box-shadow: none; font-size: 12px; }
+.legend .stats b { font-size: 17px; }
+.legend ul { display: grid; grid-template-columns: auto auto; gap: 5px 8px; }
+.legend li { gap: 5px; }
+.legend .k { width: 14px; height: 11px; }
+.legend .k-plus { width: 12px; height: 12px; font-size: 9px; }
+.legend .version { font-size: 10px; letter-spacing: .03em; opacity: .8; }
+/* Vorne und Eingang als Kappen am Hauptgang statt eigener Zeilen */
+.corridor { padding-block: 58px; }
+.corridor .cap {
+  position: absolute; left: 50%; transform: translateX(-50%) rotate(180deg); writing-mode: vertical-rl;
+  font-size: 9px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; white-space: nowrap;
+  padding: 6px 2px; border-radius: 4px;
+}
+.corridor .cap-top { top: 6px; color: var(--muted); border: 1px solid var(--line-strong); background: var(--surface); }
+.corridor .cap-door { bottom: 6px; color: var(--mark-ink); background: var(--mark); box-shadow: 0 2px 8px color-mix(in srgb, var(--mark) 45%, transparent); }
+/* kompaktere Einträge, damit 19 Gassen auf den Bildschirm passen */
+.g .t { line-height: 15px; }
+.g.half:not(.free) { min-height: 15px; }
+.g.half:not(.free) .t { line-height: 13px; }
+/* Farben: normale Einträge blau, Zwischenplätze grau */
+:root { --half-bg: #eef1f4; --half-line: #8b97a4; --half-ink: #ffffff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --half-bg: #262e37; --half-line: #75818f; --half-ink: #11151a; } }
+:root[data-theme="dark"] { --half-bg: #262e37; --half-line: #75818f; --half-ink: #11151a; }
+.rack > .g .t:not(.belegt) { background: var(--seam-bg); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--seam-line) 55%, transparent); }
+.rack > .g .t.hl { box-shadow: inset 0 0 0 1.5px var(--mark); }
+.g.half:not(.free) { border-color: var(--half-line); background: var(--half-bg); box-shadow: 0 2px 6px rgba(16, 24, 40, .12); }
+.g.half:not(.free) .plate { background: var(--half-line); color: var(--half-ink); }
+.g.half[aria-pressed="true"] { border-color: var(--mark); box-shadow: 0 0 0 2px var(--mark); }
+.g.half[aria-pressed="true"] .plate { background: var(--mark); color: var(--mark-ink); }
+.legend .k-half { background: var(--half-bg); border-color: var(--half-line); }
+.legend .k-gasse { background: var(--seam-bg); border-color: color-mix(in srgb, var(--seam-line) 55%, transparent); }
+.hit b.half, .sheet-num.half { background: var(--half-line); color: var(--half-ink); box-shadow: none; }
+/* Ruhiger Look: Gelb nur für Eingang, Auswahl und die Lupe; Blau = Eintrag, Grau = Zwischenplatz */
+.search-btn {
+  height: 44px; padding: 0 10px 0 5px; gap: 8px; border-radius: 12px;
+  border: 1px solid var(--line-strong); box-shadow: var(--shadow-1);
+}
+.search-btn:active { box-shadow: none; }
+.search-btn .ico { width: 32px; height: 32px; border-radius: 9px; }
+.search-btn .lbl b { font-family: var(--f-body); font-size: 15px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+.legend { border: 0; background: none; padding: 2px 2px 0; gap: 8px; }
+.legend .stats { padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.legend ul { gap: 6px 8px; }
+.set-btn { height: 28px; padding: 0 2px; border: 0; background: none; box-shadow: none; color: var(--muted); font-size: 12px; }
+.legend .version { font-size: 10px; line-height: 1.4; text-align: left; opacity: .7; padding-left: 2px; }
+.legend .version .app-version { white-space: nowrap; }
+.corridor { box-shadow: inset 1px 0 0 var(--line-strong), inset -1px 0 0 var(--line-strong); }
+.corridor::before { border-left-color: var(--line); }
+.lane svg { opacity: .4; }
+.corridor .cap-top { border-color: var(--line); }
+.g.half.free { width: 12px; height: 12px; border-color: var(--line); opacity: .55; }
+.g.half.free::after { font-size: 10px; }
+/* Rangfolge: Name und Logo oben am größten, Suche als schlichtes Eingabefeld darunter */
+.corner .appbar-in { gap: 22px; }
+.corner .brand { padding-top: 2px; }
+.corner .brand { gap: 7px; }
+.corner .brand .logo { width: 32px; height: 32px; border-radius: 9px; }
+.corner .brand .logo svg { width: 19px; height: 19px; }
+.corner .brand h1 { font-size: 23px; }
+.corner .brand .sub { font-size: 12px; margin-top: 2px; }
+.search-btn {
+  height: 38px; padding: 0 10px; gap: 7px; border-radius: 10px;
+  border: 1px solid var(--line-strong); background: var(--surface); box-shadow: none;
+}
+.search-btn .ico { width: auto; height: auto; background: none; color: var(--ink); border-radius: 0; }
+.search-btn .lbl { display: block; font-size: 14px; font-weight: 500; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Räume: schwebender Knopf (verschiebbar) öffnet ein dezentes Menü */
+.room-now { margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fab {
+  position: fixed; z-index: 6; left: -100px; top: -100px; width: 46px; height: 46px; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  color: var(--ink); background: color-mix(in srgb, var(--surface) 82%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px); backdrop-filter: saturate(1.4) blur(12px);
+  border: 1px solid var(--line); box-shadow: 0 6px 18px rgba(16, 24, 40, .16), 0 1px 3px rgba(16, 24, 40, .08);
+  opacity: .92; transition: transform .15s var(--ease), box-shadow .15s, opacity .15s;
+}
+.fab:active, .fab.dragging { transform: scale(1.08); opacity: 1; box-shadow: 0 12px 28px rgba(16, 24, 40, .24); }
+.fab.snap { transition: left .28s var(--ease), top .28s var(--ease), transform .15s var(--ease); }
+.fab[aria-expanded="true"] { opacity: 1; z-index: 11; }
+.fab:focus-visible { outline: 2px solid var(--mark); outline-offset: 3px; }
+.room-scrim { position: fixed; inset: 0; z-index: 9; background: rgba(12, 18, 26, .12); animation: fade .2s ease both; }
+.room-menu {
+  position: fixed; z-index: 10; width: 236px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(16, 24, 40, .22), 0 2px 6px rgba(16, 24, 40, .08);
+  transform-origin: var(--origin, top right); animation: menu-in .2s var(--ease) both;
+}
+@keyframes menu-in { from { opacity: 0; transform: translateY(-6px) scale(.96); } }
+.room-menu-h { padding: 6px 10px 4px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.room-menu button {
+  display: flex; align-items: center; gap: 10px; width: 100%; height: 44px; padding: 0 10px;
+  border: 0; border-radius: 10px; background: none; color: var(--ink); font: inherit; font-size: 15px; font-weight: 500; text-align: left; cursor: pointer;
+}
+.room-menu button:active { background: var(--surface-2); }
+.room-menu .nr {
+  flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center;
+  background: var(--surface-2); color: var(--muted); font-family: var(--f-sign); font-weight: 700; font-size: 14px;
+}
+.room-menu .nm { flex: 1; min-width: 0; }
+.room-menu .ok { flex: 0 0 auto; color: var(--ink); visibility: hidden; }
+.room-menu button[aria-checked="true"] { font-weight: 700; background: var(--surface-2); }
+.room-menu button[aria-checked="true"] .nr { background: var(--mark); color: var(--mark-ink); }
+.room-menu button[aria-checked="true"] .ok { visibility: visible; }
+/* Raum ohne Plan: Platzhalter statt Gassen */
+.room-empty { display: none; }
+body.room-other .floor .rack, body.room-other .floor .corridor, body.room-other .legend { visibility: hidden; }
+body.room-other .room-empty {
+  position: absolute; left: 0; right: 0; bottom: 0; top: var(--empty-top, 120px); z-index: 4;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 24px; text-align: center;
+  color: var(--muted);
+  animation: fade .3s ease both;
+}
+.room-empty b { font-family: var(--f-sign); font-size: 22px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+/* andere Räume: eigene Modelle und Logik folgen später, darum dort auch keine Suche */
+body.room-other .search-btn { visibility: hidden; }
+/* Suche als Ausklapp-Feld unter der Kopfleiste */
+.search-scrim { position: fixed; inset: 0; z-index: 7; background: var(--scrim); animation: fade .25s ease both; }
+.search-panel {
+  position: fixed; left: 0; right: 0; top: 0; padding-top: env(safe-area-inset-top, 0px); z-index: 8;
+  background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: 0 14px 30px rgba(16, 24, 40, .14);
+  max-height: 72vh; max-height: 72dvh; overflow-y: auto; overscroll-behavior: contain;
+  animation: drop-panel .3s var(--ease) both;
+}
+@keyframes drop-panel { from { opacity: 0; transform: translateY(-12px); } }
+.search-panel-in { max-width: 560px; margin: 0 auto; padding: 12px 16px 14px; display: flex; flex-direction: column; gap: 10px; }
+.search-panel .finder { gap: 10px; }
+.search-panel #search-done { align-self: stretch; }
 
 /* ---------- Bewegung ---------- */
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
@@ -599,31 +782,82 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   <div class="dev">Entwickelt von Kadir Atak</div>
 </div>
 
-<header class="appbar">
-  <div class="appbar-in">
-    <div class="brand">
-      <span class="logo" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 20 20"><g fill="#1b2129"><rect x="2" y="3" width="6" height="3" rx="1"></rect><rect x="2" y="8.5" width="6" height="3" rx="1"></rect><rect x="2" y="14" width="6" height="3" rx="1"></rect><rect x="12" y="3" width="6" height="3" rx="1"></rect><rect x="12" y="8.5" width="6" height="3" rx="1"></rect><rect x="12" y="14" width="6" height="3" rx="1"></rect></g></svg>
-      </span>
-      <div>
-        <h1>Gassenplan</h1>
-        <div class="sub">Halle · 31 Gassen</div>
-      </div>
-    </div>
-    <button class="syncline" id="syncline" type="button" hidden=""></button>
-    <button class="icon-btn" id="open-settings" type="button" aria-label="Einstellungen und Hilfe">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
-    </button>
-  </div>
-</header>
-
 <script type="application/json" id="seed">{"stamp":1791780392802,"models":{"587":{"nr":"587","pos":7},"588":{"nr":"588","pos":8},"793":{"nr":"793","pos":3},"794":{"nr":"794","pos":4},"854":{"nr":"854","pos":1},"855":{"nr":"855","pos":2},"091":{"nr":"091","pos":5},"092":{"nr":"092","pos":6}},"belegung":{"g27_587":{"gasse":27,"modell":"587","chargen":["27426"],"ts":1791780392802}}}</script>
 
 
 <div class="wrap">
   <div class="notice" id="notice" hidden=""></div>
 
-  <section class="finder">
+
+  <!--plan--><div class="floor" id="floor" data-fit="1.000" style="--row: 42px; --fit: 1.000;">
+    <div class="room-empty" id="room-empty" aria-live="polite">
+      <b>In Bearbeitung</b>
+    </div>
+    <div class="corridor" aria-hidden="true">
+      <div class="lane" id="lane-l"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg></div>
+      <div class="lane" id="lane-r"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg></div>
+      <span class="name">Hauptgang</span>
+      <span class="cap cap-top">Vorne</span>
+      <span class="cap cap-door">Eingang</span>
+    </div>
+    <div class="side left">
+      <header class="appbar corner">
+        <div class="appbar-in">
+          <div class="brand">
+            <span class="logo" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20"><g fill="#1b2129"><rect x="2" y="3" width="6" height="3" rx="1"></rect><rect x="2" y="8.5" width="6" height="3" rx="1"></rect><rect x="2" y="14" width="6" height="3" rx="1"></rect><rect x="12" y="3" width="6" height="3" rx="1"></rect><rect x="12" y="8.5" width="6" height="3" rx="1"></rect><rect x="12" y="14" width="6" height="3" rx="1"></rect></g></svg>
+            </span>
+            <div>
+              <h1>Gassenplan</h1>
+              <div class="room-now" id="room-name">Knorr-Ansicht</div>
+            </div>
+          </div>
+          <div class="bar-tools">
+          <button class="search-btn" id="open-search" type="button" aria-label="Suchen">
+            <span class="ico"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"></circle><path d="M12.5 12.5L16 16"></path></svg></span>
+            <span class="lbl">Modell, Charge …</span>
+          </button>
+          </div>
+          <button class="filter-pill" id="filter-pill" type="button" hidden=""></button>
+          <button class="syncline" id="syncline" type="button" hidden="" title="Nicht verbunden. Jedes Handy hat seinen eigenen Stand."></button>
+        </div>
+      </header>
+      <div class="legend" id="legend">
+        <div class="stats">
+          <div><b id="st-entries">1</b> Einträge</div>
+          <div><b id="st-chargen">1</b> Chargen</div>
+        </div>
+        <ul>
+          <li><i class="k k-gasse"></i>Eintrag</li>
+          <li><i class="k k-half"></i>Zwischenplatz</li>
+          <li><i class="k k-belegt"></i>Belegt</li>
+          <li><i class="k k-plus">+</i>Mittig eintragen</li>
+        </ul>
+        <button class="set-btn" id="open-settings" type="button" aria-label="Einstellungen und Hilfe"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg><span>Einstellungen</span></button>
+        <div class="version">Gassenplan <span class="app-version">Version 3.00</span> · Alpha</div>
+      </div>
+      <div class="rack" id="left" role="group" aria-label="Linke Seite"><button type="button" class="g" aria-pressed="false" aria-label="Gasse 31, leer" style="--i: 1; --pt: 2px; --pb: 2px;"><span class="plate">31</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 30 und 31, leer"><span class="plate">30/31</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 30, leer" style="--i: 2; --pt: 2px; --pb: 2px;"><span class="plate">30</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 29 und 30, leer"><span class="plate">29/30</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 29, leer" style="--i: 3; --pt: 2px; --pb: 2px;"><span class="plate">29</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 28 und 29, leer"><span class="plate">28/29</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 28, leer" style="--i: 4; --pt: 2px; --pb: 2px;"><span class="plate">28</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 27 und 28, leer"><span class="plate">27/28</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g flash" aria-pressed="false" aria-label="Gasse 27, Modell 587 Charge 27426" style="--i: 5; --pt: 2px; --pb: 2px;"><span class="plate">27</span><span class="bays"><span class="stack"><span class="t pop"><b>587</b><span class="ch">27426</span></span></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 26 und 27, leer"><span class="plate">26/27</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 26, leer" style="--i: 6; --pt: 2px; --pb: 2px;"><span class="plate">26</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 25 und 26, leer"><span class="plate">25/26</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 25, leer" style="--i: 7; --pt: 2px; --pb: 2px;"><span class="plate">25</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 24 und 25, leer"><span class="plate">24/25</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 24, leer" style="--i: 8; --pt: 2px; --pb: 2px;"><span class="plate">24</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 23 und 24, leer"><span class="plate">23/24</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 23, leer" style="--i: 9; --pt: 2px; --pb: 2px;"><span class="plate">23</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 22 und 23, leer"><span class="plate">22/23</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 22, leer" style="--i: 10; --pt: 2px; --pb: 2px;"><span class="plate">22</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 21 und 22, leer"><span class="plate">21/22</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 21, leer" style="--i: 11; --pt: 2px; --pb: 2px;"><span class="plate">21</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 20 und 21, leer"><span class="plate">20/21</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 20, leer" style="--i: 12; --pt: 2px; --pb: 2px;"><span class="plate">20</span><span class="bays"><span class="stack"></span></span></button></div>
+    </div>
+    <div class="side right">
+      <div class="rack" id="right" role="group" aria-label="Rechte Seite"><button type="button" class="g" aria-pressed="false" aria-label="Gasse 1, leer" style="--i: 1; --pt: 2px; --pb: 2px;"><span class="plate">1</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 1 und 2, leer"><span class="plate">1/2</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 2, leer" style="--i: 2; --pt: 2px; --pb: 2px;"><span class="plate">2</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 2 und 3, leer"><span class="plate">2/3</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 3, leer" style="--i: 3; --pt: 2px; --pb: 2px;"><span class="plate">3</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 3 und 4, leer"><span class="plate">3/4</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 4, leer" style="--i: 4; --pt: 2px; --pb: 2px;"><span class="plate">4</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 4 und 5, leer"><span class="plate">4/5</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 5, leer" style="--i: 5; --pt: 2px; --pb: 2px;"><span class="plate">5</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 5 und 6, leer"><span class="plate">5/6</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 6, leer" style="--i: 6; --pt: 2px; --pb: 2px;"><span class="plate">6</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 6 und 7, leer"><span class="plate">6/7</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 7, leer" style="--i: 7; --pt: 2px; --pb: 2px;"><span class="plate">7</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 7 und 8, leer"><span class="plate">7/8</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 8, leer" style="--i: 8; --pt: 2px; --pb: 2px;"><span class="plate">8</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 8 und 9, leer"><span class="plate">8/9</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 9, leer" style="--i: 9; --pt: 2px; --pb: 2px;"><span class="plate">9</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 9 und 10, leer"><span class="plate">9/10</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 10, leer" style="--i: 10; --pt: 2px; --pb: 2px;"><span class="plate">10</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 10 und 11, leer"><span class="plate">10/11</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 11, leer" style="--i: 11; --pt: 2px; --pb: 2px;"><span class="plate">11</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 11 und 12, leer"><span class="plate">11/12</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 12, leer" style="--i: 12; --pt: 2px; --pb: 2px;"><span class="plate">12</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 12 und 13, leer"><span class="plate">12/13</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 13, leer" style="--i: 13; --pt: 2px; --pb: 2px;"><span class="plate">13</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 13 und 14, leer"><span class="plate">13/14</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 14, leer" style="--i: 14; --pt: 2px; --pb: 2px;"><span class="plate">14</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 14 und 15, leer"><span class="plate">14/15</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 15, leer" style="--i: 15; --pt: 2px; --pb: 2px;"><span class="plate">15</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 15 und 16, leer"><span class="plate">15/16</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 16, leer" style="--i: 16; --pt: 2px; --pb: 2px;"><span class="plate">16</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 16 und 17, leer"><span class="plate">16/17</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 17, leer" style="--i: 17; --pt: 2px; --pb: 2px;"><span class="plate">17</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 17 und 18, leer"><span class="plate">17/18</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 18, leer" style="--i: 18; --pt: 2px; --pb: 2px;"><span class="plate">18</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 18 und 19, leer"><span class="plate">18/19</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 19, leer" style="--i: 19; --pt: 2px; --pb: 2px;"><span class="plate">19</span><span class="bays"><span class="stack"></span></span></button></div>
+    </div>
+  </div><!--/plan-->
+</div>
+
+<button class="fab" id="room-fab" type="button" aria-label="Raum wählen" aria-haspopup="menu" aria-expanded="false" aria-controls="room-menu">
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h12M4 10h12M4 14h12"></path></svg>
+</button>
+<div class="room-scrim" id="room-scrim" hidden=""></div>
+<div class="room-menu" id="room-menu" role="menu" aria-label="Raum wählen" hidden="">
+  <div class="room-menu-h">Raum wählen</div>
+  <button type="button" role="menuitemradio" data-room="knorr"><span class="nr">1</span><span class="nm">Knorr-Ansicht</span><svg class="ok" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"></path></svg></button>
+  <button type="button" role="menuitemradio" data-room="versandmechanik"><span class="nr">2</span><span class="nm">Versand Mechanik</span><svg class="ok" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"></path></svg></button>
+  <button type="button" role="menuitemradio" data-room="fortknox"><span class="nr">3</span><span class="nm">Versand Fort-Knox</span><svg class="ok" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"></path></svg></button>
+</div>
+<div class="search-scrim" id="search-scrim" hidden=""></div>
+<div class="search-panel" id="search-panel" hidden="">
+  <div class="search-panel-in">
+    <section class="finder">
     <label class="search" for="q">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"></circle><path d="M12.5 12.5L16 16"></path></svg>
       <input id="q" type="search" placeholder="Modell oder Charge suchen" autocomplete="off" enterkeyhint="search">
@@ -631,41 +865,9 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     </label>
     <!--chips--><div class="chips scroll" id="model-chips"><span class="chip">854</span><span class="chip">855</span><span class="chip">793</span><span class="chip">794</span><span class="chip">091</span><span class="chip">092</span><span class="chip">587</span><span class="chip">588</span></div><!--/chips-->
     <div class="results" id="results" hidden=""></div>
-  </section>
-
-  <div class="end end-front"><span class="pill">Vorne</span></div>
-
-  <!--plan--><div class="floor" id="floor" style="--row: 34px;">
-    <div class="side-label">Links · 31–20</div>
-    <div class="corridor" aria-hidden="true">
-      <div class="lane" id="lane-l"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg></div>
-      <div class="lane" id="lane-r"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg></div>
-      <span class="name">Hauptgang</span>
-    </div>
-    <div class="side-label r">Rechts · 1–19</div>
-    <div class="side left">
-      <div class="legend" id="legend">
-        <div class="stats">
-          <div><b id="st-entries">1</b>Einträge</div>
-          <div><b id="st-chargen">1</b>Chargen</div>
-        </div>
-        <ul>
-          <li><i class="k k-gasse"></i>Gasse</li>
-          <li><i class="k k-half"></i>Zwischenplatz</li>
-          <li><i class="k k-belegt"></i>Belegt</li>
-          <li><i class="k k-plus">+</i>Mittig eintragen</li>
-        </ul>
-        <p>Rechts 1 → 19<br>Links 20 → 31</p>
-      </div>
-      <div class="rack" id="left" role="group" aria-label="Linke Seite"><button type="button" class="g" aria-pressed="false" aria-label="Gasse 31, leer" style="--i: 1; --pt: 5px; --pb: 5px;"><span class="plate">31</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 30 und 31, leer"><span class="plate">30/31</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 30, leer" style="--i: 2; --pt: 5px; --pb: 5px;"><span class="plate">30</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 29 und 30, leer"><span class="plate">29/30</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 29, leer" style="--i: 3; --pt: 5px; --pb: 5px;"><span class="plate">29</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 28 und 29, leer"><span class="plate">28/29</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 28, leer" style="--i: 4; --pt: 5px; --pb: 5px;"><span class="plate">28</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 27 und 28, leer"><span class="plate">27/28</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g flash" aria-pressed="false" aria-label="Gasse 27, Modell 587 Charge 27426" style="--i: 5; --pt: 5px; --pb: 5px;"><span class="plate">27</span><span class="bays"><span class="stack"><span class="t pop"><b>587</b><span class="ch">27426</span></span></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 26 und 27, leer"><span class="plate">26/27</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 26, leer" style="--i: 6; --pt: 5px; --pb: 5px;"><span class="plate">26</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 25 und 26, leer"><span class="plate">25/26</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 25, leer" style="--i: 7; --pt: 5px; --pb: 5px;"><span class="plate">25</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 24 und 25, leer"><span class="plate">24/25</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 24, leer" style="--i: 8; --pt: 5px; --pb: 5px;"><span class="plate">24</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 23 und 24, leer"><span class="plate">23/24</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 23, leer" style="--i: 9; --pt: 5px; --pb: 5px;"><span class="plate">23</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 22 und 23, leer"><span class="plate">22/23</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 22, leer" style="--i: 10; --pt: 5px; --pb: 5px;"><span class="plate">22</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 21 und 22, leer"><span class="plate">21/22</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 21, leer" style="--i: 11; --pt: 5px; --pb: 5px;"><span class="plate">21</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 20 und 21, leer"><span class="plate">20/21</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 20, leer" style="--i: 12; --pt: 5px; --pb: 5px;"><span class="plate">20</span><span class="bays"><span class="stack"></span></span></button></div>
-    </div>
-    <div class="side right">
-      <div class="rack" id="right" role="group" aria-label="Rechte Seite"><button type="button" class="g" aria-pressed="false" aria-label="Gasse 1, leer" style="--i: 1; --pt: 5px; --pb: 5px;"><span class="plate">1</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 1 und 2, leer"><span class="plate">1/2</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 2, leer" style="--i: 2; --pt: 5px; --pb: 5px;"><span class="plate">2</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 2 und 3, leer"><span class="plate">2/3</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 3, leer" style="--i: 3; --pt: 5px; --pb: 5px;"><span class="plate">3</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 3 und 4, leer"><span class="plate">3/4</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 4, leer" style="--i: 4; --pt: 5px; --pb: 5px;"><span class="plate">4</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 4 und 5, leer"><span class="plate">4/5</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 5, leer" style="--i: 5; --pt: 5px; --pb: 5px;"><span class="plate">5</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 5 und 6, leer"><span class="plate">5/6</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 6, leer" style="--i: 6; --pt: 5px; --pb: 5px;"><span class="plate">6</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 6 und 7, leer"><span class="plate">6/7</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 7, leer" style="--i: 7; --pt: 5px; --pb: 5px;"><span class="plate">7</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 7 und 8, leer"><span class="plate">7/8</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 8, leer" style="--i: 8; --pt: 5px; --pb: 5px;"><span class="plate">8</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 8 und 9, leer"><span class="plate">8/9</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 9, leer" style="--i: 9; --pt: 5px; --pb: 5px;"><span class="plate">9</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 9 und 10, leer"><span class="plate">9/10</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 10, leer" style="--i: 10; --pt: 5px; --pb: 5px;"><span class="plate">10</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 10 und 11, leer"><span class="plate">10/11</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 11, leer" style="--i: 11; --pt: 5px; --pb: 5px;"><span class="plate">11</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 11 und 12, leer"><span class="plate">11/12</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 12, leer" style="--i: 12; --pt: 5px; --pb: 5px;"><span class="plate">12</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 12 und 13, leer"><span class="plate">12/13</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 13, leer" style="--i: 13; --pt: 5px; --pb: 5px;"><span class="plate">13</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 13 und 14, leer"><span class="plate">13/14</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 14, leer" style="--i: 14; --pt: 5px; --pb: 5px;"><span class="plate">14</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 14 und 15, leer"><span class="plate">14/15</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 15, leer" style="--i: 15; --pt: 5px; --pb: 5px;"><span class="plate">15</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 15 und 16, leer"><span class="plate">15/16</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 16, leer" style="--i: 16; --pt: 5px; --pb: 5px;"><span class="plate">16</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 16 und 17, leer"><span class="plate">16/17</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 17, leer" style="--i: 17; --pt: 5px; --pb: 5px;"><span class="plate">17</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 17 und 18, leer"><span class="plate">17/18</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 18, leer" style="--i: 18; --pt: 5px; --pb: 5px;"><span class="plate">18</span><span class="bays"><span class="stack"></span></span></button><div class="seam"><button type="button" class="g half free" aria-pressed="false" aria-label="Zwischen Gasse 18 und 19, leer"><span class="plate">18/19</span><span class="bays"><span class="stack"></span></span></button></div><button type="button" class="g" aria-pressed="false" aria-label="Gasse 19, leer" style="--i: 19; --pt: 5px; --pb: 5px;"><span class="plate">19</span><span class="bays"><span class="stack"></span></span></button></div>
-    </div>
-  </div><!--/plan-->
-
-  <div class="end end-back" id="end-back"><span class="door"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5V2.5h7v10M9.5 12.5h2M6.5 7.5h.01"></path></svg>Eingang · hinten</span></div>
-  <div class="version">Gassenplan <span class="app-version">Version 2.7</span> · Alpha</div>
+    </section>
+    <button class="btn" id="search-done" type="button">Fertig</button>
+  </div>
 </div>
 
 <div class="scrim" id="scrim" hidden=""></div>
@@ -769,9 +971,9 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 (() => {
   const SOURCE = '<!doctype html>\n' + document.documentElement.outerHTML;
   // Version: bei jeder Verbesserung erhöhen (siehe CHANGELOG.md)
-  const APP_VERSION = '2.8', APP_STAGE = 'Alpha';
+  const APP_VERSION = '3.00', APP_STAGE = 'Alpha';
   // App-Versionen mit Datum: wird beim Bauen aus CHANGELOG.md eingesetzt
-  const VERSION_HISTORY = [{"v": "2.8", "d": "26.10.2026", "t": "Updates werden zuverlässiger geladen"}, {"v": "2.7", "d": "15.10.2026", "t": "Datenschutzhinweise gekürzt"}, {"v": "2.6", "d": "15.10.2026", "t": "Datenschutzhinweise in den Einstellungen"}, {"v": "2.5", "d": "13.10.2026", "t": "Interne Verbesserungen, ohne Hinweisfenster"}, {"v": "2.4", "d": "13.10.2026", "t": "Interne Verbesserungen für den Verantwortlichen"}, {"v": "2.3", "d": "13.10.2026", "t": "Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge"}, {"v": "2.2", "d": "12.10.2026", "t": "Startbild nennt den Entwickler: Kadir Atak"}, {"v": "2.1", "d": "12.10.2026", "t": "Mehr Abstand zwischen Zwischenplätzen und den Einträgen der Gassen daneben"}, {"v": "2.0", "d": "12.10.2026", "t": "Neues Erscheinungsbild: Kopfleiste mit Live-Status, Regale als Karten, Übersicht vorne links"}, {"v": "1.x", "d": "12.10.2026", "t": "1.9 Zwischenplätze blau, Schild abgesetzt von der Gassennummer, flachere Gassen"}];
+  const VERSION_HISTORY = [{"v": "3.00", "d": "26.10.2026", "t": "Ganzer Plan auf einer Seite ohne Wischen, Gassenbreite wie bisher"}, {"v": "2.8", "d": "26.10.2026", "t": "Updates werden zuverlässiger geladen"}, {"v": "2.7", "d": "15.10.2026", "t": "Datenschutzhinweise gekürzt"}, {"v": "2.6", "d": "15.10.2026", "t": "Datenschutzhinweise in den Einstellungen"}, {"v": "2.5", "d": "13.10.2026", "t": "Interne Verbesserungen, ohne Hinweisfenster"}, {"v": "2.4", "d": "13.10.2026", "t": "Interne Verbesserungen für den Verantwortlichen"}, {"v": "2.3", "d": "13.10.2026", "t": "Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge"}, {"v": "2.2", "d": "12.10.2026", "t": "Startbild nennt den Entwickler: Kadir Atak"}, {"v": "2.1", "d": "12.10.2026", "t": "Mehr Abstand zwischen Zwischenplätzen und den Einträgen der Gassen daneben"}, {"v": "2.0", "d": "12.10.2026", "t": "Neues Erscheinungsbild: Kopfleiste mit Live-Status, Regale als Karten, Übersicht vorne links"}, {"v": "1.x", "d": "12.10.2026", "t": "1.9 Zwischenplätze blau, Schild abgesetzt von der Gassennummer, flachere Gassen"}];
   const TOTAL = 31, RIGHT_END = 19;
   const $ = id => document.getElementById(id);
   document.querySelectorAll('.app-version').forEach(e => { e.textContent = 'Version ' + APP_VERSION; });
@@ -781,9 +983,12 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   // Was ist neu: erscheint bei jedem Öffnen, bis man es schließt; bei der nächsten Version wieder
   // silent: true = Update ohne Fenster „Was ist neu“ (nur wenn Kadir Atak das so will)
   const WHATS_NEW = {
-    version: '2.8', from: '2.7',
+    version: '3.00', from: '2.8',
     items: [
-      ['Zuverlässigere Updates', 'Neue Versionen werden jetzt zuverlässiger geladen.'],
+      ['Alles auf einen Blick', 'Der ganze Plan passt jetzt auf eine Seite, ohne Wischen. Die Gassen sind so breit wie bisher.'],
+      ['Neue Farben', 'Einträge sind blau umrandet, Zwischenplätze grau.'],
+      ['Suche und Einstellungen', 'Beides findest du jetzt oben links unter „Gassenplan“.'],
+      ['Räume wechseln', 'Über den runden Knopf mit den drei Strichen. Du kannst ihn mit dem Finger verschieben. Versand Mechanik und Versand Fort-Knox sind noch in Bearbeitung.'],
     ],
   };
   const NEWS_KEY = 'gassenplan-neu-gelesen';
@@ -791,24 +996,37 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     let seen = null;
     try { seen = localStorage.getItem(NEWS_KEY); } catch (_) {}
     if (WHATS_NEW.silent || !WHATS_NEW.items.length || seen === WHATS_NEW.version) return;
+    // Erst lesen, dann bestätigen: kein Schließen-Kreuz, der Knopf wird erst nach kurzer Lesezeit
+    // und nach dem Blättern bis zum Ende frei. Bis dahin ist die App darunter gesperrt.
+    const READ_SECONDS = 6;
+    let left = READ_SECONDS, atEnd = false, timer = 0;
     const closeNews = () => {
+      if (left > 0 || !atEnd) return;
+      clearInterval(timer);
       try { localStorage.setItem(NEWS_KEY, WHATS_NEW.version); } catch (_) {}
       box.remove();
     };
-    const box = el('div', { class: 'news', id: 'news', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'news-h' },
-      el('div', { class: 'news-card' },
-        el('button', { class: 'icon-btn', type: 'button', id: 'news-close', 'aria-label': 'Schließen', onclick: closeNews }),
-        el('div', { class: 'news-head' },
-          el('span', { class: 'logo', 'aria-hidden': 'true' }),
-          el('div', {},
-            el('div', { class: 'label' }, 'Was ist neu'),
-            el('h2', { id: 'news-h' }, 'Version ' + WHATS_NEW.version),
-            el('div', { class: 'from' }, 'Änderungen seit Version ' + WHATS_NEW.from))),
-        el('ul', {}, WHATS_NEW.items.map(([t, d]) => el('li', {}, el('div', {}, el('b', {}, t), el('span', {}, d))))),
-        el('button', { class: 'btn primary', type: 'button', onclick: closeNews }, 'Verstanden')));
-    box.querySelector('#news-close').innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>';
+    const ok = el('button', { class: 'btn primary', type: 'button', id: 'news-close', onclick: closeNews });
+    const card = el('div', { class: 'news-card' },
+      el('div', { class: 'news-head' },
+        el('span', { class: 'logo', 'aria-hidden': 'true' }),
+        el('div', {},
+          el('div', { class: 'label' }, 'Was ist neu · bitte lesen'),
+          el('h2', { id: 'news-h' }, 'Version ' + WHATS_NEW.version),
+          el('div', { class: 'from' }, 'Änderungen seit Version ' + WHATS_NEW.from))),
+      el('ul', {}, WHATS_NEW.items.map(([t, d]) => el('li', {}, el('div', {}, el('b', {}, t), el('span', {}, d))))),
+      ok);
+    const box = el('div', { class: 'news', id: 'news', role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'news-h' }, card);
+    const update = () => {
+      ok.disabled = left > 0 || !atEnd;
+      ok.textContent = left > 0 ? 'Bitte lesen … ' + left : atEnd ? 'Gelesen und verstanden' : 'Bitte bis zum Ende lesen ↓';
+    };
+    const checkEnd = () => { if (!atEnd && card.scrollTop + card.clientHeight >= card.scrollHeight - 4) { atEnd = true; update(); } };
+    card.addEventListener('scroll', checkEnd, { passive: true });
     box.querySelector('.news-head .logo').innerHTML = document.querySelector('.appbar .logo').innerHTML;
     document.body.append(box);
+    update(); checkEnd();
+    timer = setInterval(() => { left--; update(); if (left <= 0) clearInterval(timer); }, 1000);
   }
   setTimeout(showNews, 1500);
   const buttons = {};
@@ -957,6 +1175,11 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 
   // ---------- Suche und Modellfilter ----------
   function renderFinder() {
+    // aktiver Filter als Schild in der Kopfleiste; Antippen hebt ihn auf
+    const pill = $('filter-pill');
+    const active = state.filterModel ? (isBelegt(state.filterModel) ? 'Belegt' : state.filterModel) : (state.query.trim() ? '„' + state.query.trim() + '“' : '');
+    pill.hidden = !active;
+    pill.textContent = active ? active + '  ×' : '';
     const chips = $('model-chips');
     const prevInp = $('new-model');
     const draft = prevInp ? prevInp.value : '';
@@ -1021,6 +1244,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
       const detail = modelName(p.modell) + (matchCh.length ? ' · Charge ' + matchCh.join(', ') : '');
       res.append(el('button', { type: 'button', class: 'hit', onclick: () => open(p.gasse) },
         el('b', { class: isHalf(p.gasse) ? 'half' : '' }, label(p.gasse)), el('span', {}, (isHalf(p.gasse) ? 'Mittig · ' : '') + detail)));
+      res.lastChild.addEventListener('click', closeSearch);
     });
   }
 
@@ -1061,6 +1285,101 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   $('close-settings').addEventListener('click', () => hideSheet('settings'));
   $('syncline').addEventListener('click', () => { if (state.current) close(); showSheet('settings'); });
 
+  // ---------- Räume ----------
+  // Raum 1 ist der bisherige Plan, Raum 2 und 3 bekommen ihren Plan (eigene Modelle und Regeln) später
+  const ROOMS = [{ id: 'knorr', name: 'Knorr-Ansicht' }, { id: 'versandmechanik', name: 'Versand Mechanik' }, { id: 'fortknox', name: 'Versand Fort-Knox' }];
+  const ROOM_KEY = 'gassenplan-raum';
+  let room = ROOMS[0].id;
+  try { const r = localStorage.getItem(ROOM_KEY); if (ROOMS.some(x => x.id === r)) room = r; } catch (_) {}
+  function renderRoom() {
+    const r = ROOMS.find(x => x.id === room), empty = room !== ROOMS[0].id;
+    $('room-name').textContent = r.name;
+    document.body.classList.toggle('room-other', empty);
+    if (empty) {
+      const floor = $('floor'), head = document.querySelector('.appbar.corner');
+      $('room-empty').style.setProperty('--empty-top', Math.round(head.getBoundingClientRect().bottom - floor.getBoundingClientRect().top + 14) + 'px');
+    }
+    $('room-menu').querySelectorAll('[data-room]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.room === room)));
+  }
+  function setRoom(id) {
+    room = id;
+    try { localStorage.setItem(ROOM_KEY, id); } catch (_) {}
+    renderRoom();
+  }
+  function openRooms() {
+    if (state.current) close();
+    const r = $('room-fab').getBoundingClientRect(), menu = $('room-menu'), w = 236, m = 8;
+    const right = r.left + r.width / 2 > innerWidth / 2, below = r.top + r.height / 2 < innerHeight / 2;
+    menu.style.left = Math.round(Math.min(Math.max(m, right ? r.right - w : r.left), innerWidth - w - m)) + 'px';
+    menu.style.top = below ? Math.round(r.bottom + 8) + 'px' : 'auto';
+    menu.style.bottom = below ? 'auto' : Math.round(innerHeight - r.top + 8) + 'px';
+    menu.style.setProperty('--origin', (below ? 'top ' : 'bottom ') + (right ? 'right' : 'left'));
+    menu.hidden = false; $('room-scrim').hidden = false;
+    $('room-fab').setAttribute('aria-expanded', 'true');
+  }
+  function closeRooms() {
+    $('room-menu').hidden = true; $('room-scrim').hidden = true;
+    $('room-fab').setAttribute('aria-expanded', 'false');
+  }
+  // Knopf mit dem Finger verschieben; beim Loslassen rastet er am nächsten Rand ein, Platz wird gemerkt
+  const FAB_KEY = 'gassenplan-knopf', fab = $('room-fab');
+  let fabPos = { side: 'r', y: .62 }, drag = null, wasDragged = false;
+  try { const v = JSON.parse(localStorage.getItem(FAB_KEY)); if (v && (v.side === 'l' || v.side === 'r') && v.y >= 0 && v.y <= 1) fabPos = v; } catch (_) {}
+  const insets = () => { const cs = getComputedStyle(document.documentElement); return [parseFloat(cs.paddingTop) || 0, parseFloat(cs.paddingBottom) || 0]; };
+  function moveFab(x, y) {
+    const [it, ib] = insets(), w = fab.offsetWidth, h = fab.offsetHeight, m = 10;
+    fab.style.left = Math.round(Math.min(Math.max(m, x), innerWidth - w - m)) + 'px';
+    fab.style.top = Math.round(Math.min(Math.max(it + m, y), innerHeight - ib - h - m)) + 'px';
+  }
+  const placeFab = () => moveFab(fabPos.side === 'l' ? 0 : innerWidth, fabPos.y * innerHeight - fab.offsetHeight / 2);
+  fab.addEventListener('pointerdown', e => {
+    drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, ox: fab.offsetLeft, oy: fab.offsetTop, moved: false };
+    fab.setPointerCapture(e.pointerId); fab.classList.remove('snap');
+  });
+  fab.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+    if (!drag.moved && Math.hypot(dx, dy) < 6) return;
+    if (!drag.moved) { drag.moved = true; closeRooms(); fab.classList.add('dragging'); }
+    moveFab(drag.ox + dx, drag.oy + dy);
+  });
+  const endDrag = () => {
+    if (!drag) return;
+    wasDragged = drag.moved; drag = null; fab.classList.remove('dragging');
+    if (!wasDragged) return;
+    fabPos = { side: fab.offsetLeft + fab.offsetWidth / 2 < innerWidth / 2 ? 'l' : 'r', y: (fab.offsetTop + fab.offsetHeight / 2) / innerHeight };
+    try { localStorage.setItem(FAB_KEY, JSON.stringify(fabPos)); } catch (_) {}
+    fab.classList.add('snap'); placeFab();
+  };
+  fab.addEventListener('pointerup', endDrag);
+  fab.addEventListener('pointercancel', endDrag);
+  fab.addEventListener('click', () => {
+    if (wasDragged) { wasDragged = false; return; }
+    $('room-menu').hidden ? openRooms() : closeRooms();
+  });
+  window.addEventListener('resize', () => { fab.classList.remove('snap'); placeFab(); closeRooms(); });
+  placeFab();
+  $('room-scrim').addEventListener('click', closeRooms);
+  $('room-menu').addEventListener('click', e => { const b = e.target.closest('[data-room]'); if (!b) return; setRoom(b.dataset.room); closeRooms(); });
+  window.addEventListener('resize', () => { if (room !== ROOMS[0].id) renderRoom(); });
+  renderRoom();
+
+  // ---------- Suche ausklappen ----------
+  function openSearch() {
+    if (state.current) close();
+    if (room !== ROOMS[0].id) setRoom(ROOMS[0].id);   // gesucht wird vorerst nur in der Knorr-Ansicht
+    $('search-panel').hidden = false;
+    $('search-scrim').hidden = false;
+    $('q').focus();
+  }
+  function closeSearch() { $('search-panel').hidden = true; $('search-scrim').hidden = true; }
+  $('open-search').addEventListener('click', () => $('search-panel').hidden ? openSearch() : closeSearch());
+  $('search-done').addEventListener('click', closeSearch);
+  $('search-scrim').addEventListener('click', closeSearch);
+  $('filter-pill').addEventListener('click', () => {
+    state.filterModel = null; state.query = ''; $('q').value = ''; $('q-clear').hidden = true; render();
+  });
+
   // ---------- Gasse öffnen ----------
   function open(n) {
     if (state.current !== n) state.armed = null;
@@ -1068,20 +1387,20 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     hideSheet('settings');
     showSheet('sheet');
     render();
-    // die Gasse mittig in den freien Bereich zwischen Kopfleiste und Fenster holen
+    // Kein Scrollen: liegt die Gasse hinter dem Fenster, rutscht der Plan ein Stück nach oben
     requestAnimationFrame(() => {
-      document.querySelector('.wrap').style.paddingBottom = ($('sheet').offsetHeight + 24) + 'px';
+      const fl = $('floor');
+      const cur = parseFloat(fl.style.getPropertyValue('--shift')) || 0;
       const r = buttons[n].getBoundingClientRect();
-      const top = document.querySelector('.appbar').getBoundingClientRect().bottom;
-      const free = window.innerHeight - $('sheet').offsetHeight - top;
-      const want = top + Math.max(free, r.height + 16) / 2 - r.height / 2;
-      window.scrollTo({ top: Math.max(0, window.scrollY + r.top - want), behavior: 'smooth' });
+      const sheetTop = window.innerHeight - $('sheet').offsetHeight;
+      const over = (r.bottom - cur) + 10 - sheetTop;
+      fl.style.setProperty('--shift', over > 0 ? (-over) + 'px' : '0px');
     });
   }
   function close() {
     state.current = null; state.armed = null;
     hideSheet('sheet');
-    document.querySelector('.wrap').style.paddingBottom = '';
+    $('floor').style.setProperty('--shift', '0px');
     render();
   }
 
@@ -1185,11 +1504,12 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   $('next').addEventListener('click', () => step(1));
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
+    if (!$('room-menu').hidden) { closeRooms(); return; }
     if (shown.has('settings')) hideSheet('settings'); else if (state.current) close();
   });
 
   // Alle Gassen gleich dick: so hoch, wie die vollste Gasse samt halben Zwischenplätzen braucht
-  const MIN_ROW = 34, EDGE = 5, GAP = 5;   // GAP: Abstand zwischen Zwischenplatz-Kasten und Gassen-Einträgen
+  const MIN_ROW = 30, EDGE = 2, GAP = 3;   // eng, damit alles auf eine Seite passt
   function fitRows() {
     const floor = $('floor');
     const half = s => (s && s.classList.contains('seam') && !s.firstElementChild.classList.contains('free'))
@@ -1202,7 +1522,13 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
       const stack = a.querySelector('.stack');
       row = Math.max(row, Math.ceil((stack ? stack.offsetHeight : 0) + pt + pb));
     });
+    // Gassen füllen genau die freie Höhe. Reicht sie nicht, wird der ganze Plan leicht verkleinert.
+    const fits = Math.floor((floor.clientHeight - 2) / 19);
+    let scale = 1;
+    if (row <= fits) row = fits; else scale = Math.max(0.6, fits / row);
     floor.style.setProperty('--row', row + 'px');
+    floor.style.setProperty('--fit', scale.toFixed(3));
+    floor.dataset.fit = scale.toFixed(3);
   }
   function render() { renderPlan(); fitRows(); renderFinder(); renderSheet(); }
   window.addEventListener('resize', fitRows);
@@ -1722,7 +2048,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   }
   if ($('admin') && subtle) {
     $('admin').hidden = !isAdminDevice();
-    const ver = document.querySelector('.wrap > .version');
+    const ver = document.querySelector('.legend .version');
     let taps = [];
     if (ver) ver.addEventListener('click', () => {
       const now = Date.now();
@@ -1777,11 +2103,19 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   if (location.protocol === 'https:' || location.hostname === 'localhost') {
     if ('serviceWorker' in navigator) {
       const hadController = !!navigator.serviceWorker.controller;
-      let reloaded = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (hadController && !reloaded) { reloaded = true; location.reload(); }
-      });
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+      let reloaded = false, pending = false;
+      // Neue Fassung sofort übernehmen, aber nicht mitten im Eintragen: dann erst, wenn das Fenster zu ist
+      const busy = () => !!state.current || (document.activeElement && /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName));
+      const restart = () => { if (reloaded) return; if (busy() && document.visibilityState === 'visible') { pending = true; return; } reloaded = true; location.reload(); };
+      navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController) restart(); });
+      setInterval(() => { if (pending) restart(); }, 2000);
+      document.addEventListener('visibilitychange', () => { if (pending) restart(); });
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        // nach neuer Fassung schauen: beim Zurückkehren in die App und alle 5 Minuten
+        const check = () => reg.update().catch(() => {});
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') check(); });
+        setInterval(check, 5 * 60 * 1000);
+      }).catch(() => {});
     }
     const standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
     if (!standalone && /iPhone|iPad|iPod/.test(navigator.userAgent)) $('install-hint').hidden = false;
