@@ -617,6 +617,26 @@ body { height: 100%; overflow: hidden; display: flex; flex-direction: column; ov
 .legend .k-half { background: var(--half-bg); border-color: var(--half-line); }
 .legend .k-gasse { background: var(--seam-bg); border-color: color-mix(in srgb, var(--seam-line) 55%, transparent); }
 .hit b.half, .sheet-num.half { background: var(--half-line); color: var(--half-ink); box-shadow: none; }
+/* Ruhiger Look: Gelb nur für Eingang, Auswahl und die Lupe; Blau = Eintrag, Grau = Zwischenplatz */
+.search-btn {
+  height: 44px; padding: 0 10px 0 5px; gap: 8px; border-radius: 12px;
+  border: 1px solid var(--line-strong); box-shadow: var(--shadow-1);
+}
+.search-btn:active { box-shadow: none; }
+.search-btn .ico { width: 32px; height: 32px; border-radius: 9px; }
+.search-btn .lbl b { font-family: var(--f-body); font-size: 15px; font-weight: 600; letter-spacing: 0; text-transform: none; }
+.legend { border: 0; background: none; padding: 2px 2px 0; gap: 8px; }
+.legend .stats { padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.legend ul { gap: 6px 8px; }
+.set-btn { height: 28px; padding: 0 2px; border: 0; background: none; box-shadow: none; color: var(--muted); font-size: 12px; }
+.legend .version { font-size: 10px; line-height: 1.4; text-align: left; opacity: .7; padding-left: 2px; }
+.legend .version .app-version { white-space: nowrap; }
+.corridor { box-shadow: inset 1px 0 0 var(--line-strong), inset -1px 0 0 var(--line-strong); }
+.corridor::before { border-left-color: var(--line); }
+.lane svg { opacity: .4; }
+.corridor .cap-top { border-color: var(--line); }
+.g.half.free { width: 12px; height: 12px; border-color: var(--line); opacity: .55; }
+.g.half.free::after { font-size: 10px; }
 /* Suche als Ausklapp-Feld unter der Kopfleiste */
 .search-scrim { position: fixed; inset: 0; z-index: 7; background: var(--scrim); animation: fade .25s ease both; }
 .search-panel {
@@ -699,7 +719,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
           <div><b id="st-chargen">0</b> Chargen</div>
         </div>
         <ul>
-          <li><i class="k k-gasse"></i>Gasse</li>
+          <li><i class="k k-gasse"></i>Eintrag</li>
           <li><i class="k k-half"></i>Zwischenplatz</li>
           <li><i class="k k-belegt"></i>Belegt</li>
           <li><i class="k k-plus">+</i>Mittig eintragen</li>
