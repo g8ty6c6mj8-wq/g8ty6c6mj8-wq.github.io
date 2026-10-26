@@ -651,20 +651,26 @@ body { height: 100%; overflow: hidden; display: flex; flex-direction: column; ov
 }
 .search-btn .ico { width: auto; height: auto; background: none; color: var(--ink); border-radius: 0; }
 .search-btn .lbl { display: block; font-size: 14px; font-weight: 500; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* Räume: Name antippen öffnet ein schwebendes Menü */
-.corner .brand { cursor: pointer; border-radius: 10px; -webkit-tap-highlight-color: transparent; transition: transform .15s var(--ease); }
-.corner .brand:active { transform: scale(.97); }
-.corner .brand:focus-visible { outline: 2px solid var(--mark); outline-offset: 3px; }
-.room-now { display: flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
-.room-now span { overflow: hidden; text-overflow: ellipsis; }
-.room-now svg { flex: 0 0 auto; transition: transform .2s var(--ease); }
-.corner .brand[aria-expanded="true"] .room-now svg { transform: rotate(180deg); }
+/* Räume: schwebender Knopf (verschiebbar) öffnet ein dezentes Menü */
+.room-now { margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fab {
+  position: fixed; z-index: 6; left: -100px; top: -100px; width: 46px; height: 46px; border-radius: 50%;
+  display: grid; place-items: center; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
+  color: var(--ink); background: color-mix(in srgb, var(--surface) 82%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px); backdrop-filter: saturate(1.4) blur(12px);
+  border: 1px solid var(--line); box-shadow: 0 6px 18px rgba(16, 24, 40, .16), 0 1px 3px rgba(16, 24, 40, .08);
+  opacity: .92; transition: transform .15s var(--ease), box-shadow .15s, opacity .15s;
+}
+.fab:active, .fab.dragging { transform: scale(1.08); opacity: 1; box-shadow: 0 12px 28px rgba(16, 24, 40, .24); }
+.fab.snap { transition: left .28s var(--ease), top .28s var(--ease), transform .15s var(--ease); }
+.fab[aria-expanded="true"] { opacity: 1; z-index: 11; }
+.fab:focus-visible { outline: 2px solid var(--mark); outline-offset: 3px; }
 .room-scrim { position: fixed; inset: 0; z-index: 9; background: rgba(12, 18, 26, .12); animation: fade .2s ease both; }
 .room-menu {
   position: fixed; z-index: 10; width: 236px; padding: 6px;
   background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
   box-shadow: 0 18px 40px rgba(16, 24, 40, .22), 0 2px 6px rgba(16, 24, 40, .08);
-  transform-origin: top left; animation: menu-in .22s var(--ease) both;
+  transform-origin: var(--origin, top right); animation: menu-in .2s var(--ease) both;
 }
 @keyframes menu-in { from { opacity: 0; transform: translateY(-6px) scale(.96); } }
 .room-menu-h { padding: 6px 10px 4px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
@@ -754,13 +760,13 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     <div class="side left">
       <header class="appbar corner">
         <div class="appbar-in">
-          <div class="brand" id="room-btn" role="button" tabindex="0" aria-haspopup="menu" aria-expanded="false" aria-controls="room-menu">
+          <div class="brand">
             <span class="logo" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 20 20"><g fill="#1b2129"><rect x="2" y="3" width="6" height="3" rx="1"/><rect x="2" y="8.5" width="6" height="3" rx="1"/><rect x="2" y="14" width="6" height="3" rx="1"/><rect x="12" y="3" width="6" height="3" rx="1"/><rect x="12" y="8.5" width="6" height="3" rx="1"/><rect x="12" y="14" width="6" height="3" rx="1"/></g></svg>
             </span>
             <div>
               <h1>Gassenplan</h1>
-              <div class="room-now"><span id="room-name">Knorr-Ansicht</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3.5l3 3 3-3"/></svg></div>
+              <div class="room-now" id="room-name">Knorr-Ansicht</div>
             </div>
           </div>
           <div class="bar-tools">
@@ -797,12 +803,15 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   <!--floor-end-->
 </div>
 
+<button class="fab" id="room-fab" type="button" aria-label="Raum wählen" aria-haspopup="menu" aria-expanded="false" aria-controls="room-menu">
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h12M4 10h12M4 14h12"/></svg>
+</button>
 <div class="room-scrim" id="room-scrim" hidden></div>
 <div class="room-menu" id="room-menu" role="menu" aria-label="Raum wählen" hidden>
   <div class="room-menu-h">Raum wählen</div>
   <button type="button" role="menuitemradio" data-room="knorr"><span class="nr">1</span><span class="nm">Knorr-Ansicht</span><svg class="ok" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
   <button type="button" role="menuitemradio" data-room="versandmechanik"><span class="nr">2</span><span class="nm">Versand Mechanik</span><svg class="ok" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
-  <button type="button" role="menuitemradio" data-room="fortknox"><span class="nr">3</span><span class="nm">Versand Fort Knox</span><svg class="ok" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
+  <button type="button" role="menuitemradio" data-room="fortknox"><span class="nr">3</span><span class="nm">Versand Fort-Knox</span><svg class="ok" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
 </div>
 <div class="search-scrim" id="search-scrim" hidden></div>
 <div class="search-panel" id="search-panel" hidden>
@@ -1181,7 +1190,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 
   // ---------- Räume ----------
   // Entwurf: Raum 1 ist der bisherige Plan, Raum 2 und 3 bekommen ihren Plan später
-  const ROOMS = [{ id: 'knorr', name: 'Knorr-Ansicht' }, { id: 'versandmechanik', name: 'Versand Mechanik' }, { id: 'fortknox', name: 'Versand Fort Knox' }];
+  const ROOMS = [{ id: 'knorr', name: 'Knorr-Ansicht' }, { id: 'versandmechanik', name: 'Versand Mechanik' }, { id: 'fortknox', name: 'Versand Fort-Knox' }];
   const ROOM_KEY = 'gassenplan-raum';
   let room = ROOMS[0].id;
   try { const r = localStorage.getItem(ROOM_KEY); if (ROOMS.some(x => x.id === r)) room = r; } catch (_) {}
@@ -1202,19 +1211,57 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   }
   function openRooms() {
     if (state.current) close();
-    const r = $('room-btn').getBoundingClientRect();
-    $('room-menu').style.top = Math.round(r.bottom + 8) + 'px';
-    $('room-menu').style.left = Math.round(Math.max(8, r.left - 6)) + 'px';
-    $('room-menu').hidden = false; $('room-scrim').hidden = false;
-    $('room-btn').setAttribute('aria-expanded', 'true');
-    $('room-menu').querySelector('[aria-checked="true"]')?.focus({ preventScroll: true });
+    const r = $('room-fab').getBoundingClientRect(), menu = $('room-menu'), w = 236, m = 8;
+    const right = r.left + r.width / 2 > innerWidth / 2, below = r.top + r.height / 2 < innerHeight / 2;
+    menu.style.left = Math.round(Math.min(Math.max(m, right ? r.right - w : r.left), innerWidth - w - m)) + 'px';
+    menu.style.top = below ? Math.round(r.bottom + 8) + 'px' : 'auto';
+    menu.style.bottom = below ? 'auto' : Math.round(innerHeight - r.top + 8) + 'px';
+    menu.style.setProperty('--origin', (below ? 'top ' : 'bottom ') + (right ? 'right' : 'left'));
+    menu.hidden = false; $('room-scrim').hidden = false;
+    $('room-fab').setAttribute('aria-expanded', 'true');
   }
   function closeRooms() {
     $('room-menu').hidden = true; $('room-scrim').hidden = true;
-    $('room-btn').setAttribute('aria-expanded', 'false');
+    $('room-fab').setAttribute('aria-expanded', 'false');
   }
-  $('room-btn').addEventListener('click', () => $('room-menu').hidden ? openRooms() : closeRooms());
-  $('room-btn').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('room-btn').click(); } });
+  // Knopf mit dem Finger verschieben; beim Loslassen rastet er am nächsten Rand ein, Platz wird gemerkt
+  const FAB_KEY = 'gassenplan-knopf', fab = $('room-fab');
+  let fabPos = { side: 'r', y: .62 }, drag = null, wasDragged = false;
+  try { const v = JSON.parse(localStorage.getItem(FAB_KEY)); if (v && (v.side === 'l' || v.side === 'r') && v.y >= 0 && v.y <= 1) fabPos = v; } catch (_) {}
+  const insets = () => { const cs = getComputedStyle(document.documentElement); return [parseFloat(cs.paddingTop) || 0, parseFloat(cs.paddingBottom) || 0]; };
+  function moveFab(x, y) {
+    const [it, ib] = insets(), w = fab.offsetWidth, h = fab.offsetHeight, m = 10;
+    fab.style.left = Math.round(Math.min(Math.max(m, x), innerWidth - w - m)) + 'px';
+    fab.style.top = Math.round(Math.min(Math.max(it + m, y), innerHeight - ib - h - m)) + 'px';
+  }
+  const placeFab = () => moveFab(fabPos.side === 'l' ? 0 : innerWidth, fabPos.y * innerHeight - fab.offsetHeight / 2);
+  fab.addEventListener('pointerdown', e => {
+    drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, ox: fab.offsetLeft, oy: fab.offsetTop, moved: false };
+    fab.setPointerCapture(e.pointerId); fab.classList.remove('snap');
+  });
+  fab.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+    if (!drag.moved && Math.hypot(dx, dy) < 6) return;
+    if (!drag.moved) { drag.moved = true; closeRooms(); fab.classList.add('dragging'); }
+    moveFab(drag.ox + dx, drag.oy + dy);
+  });
+  const endDrag = () => {
+    if (!drag) return;
+    wasDragged = drag.moved; drag = null; fab.classList.remove('dragging');
+    if (!wasDragged) return;
+    fabPos = { side: fab.offsetLeft + fab.offsetWidth / 2 < innerWidth / 2 ? 'l' : 'r', y: (fab.offsetTop + fab.offsetHeight / 2) / innerHeight };
+    try { localStorage.setItem(FAB_KEY, JSON.stringify(fabPos)); } catch (_) {}
+    fab.classList.add('snap'); placeFab();
+  };
+  fab.addEventListener('pointerup', endDrag);
+  fab.addEventListener('pointercancel', endDrag);
+  fab.addEventListener('click', () => {
+    if (wasDragged) { wasDragged = false; return; }
+    $('room-menu').hidden ? openRooms() : closeRooms();
+  });
+  window.addEventListener('resize', () => { fab.classList.remove('snap'); placeFab(); closeRooms(); });
+  placeFab();
   $('room-scrim').addEventListener('click', closeRooms);
   $('room-menu').addEventListener('click', e => { const b = e.target.closest('[data-room]'); if (!b) return; setRoom(b.dataset.room); closeRooms(); });
   window.addEventListener('resize', () => { if (room !== ROOMS[0].id) renderRoom(); });
