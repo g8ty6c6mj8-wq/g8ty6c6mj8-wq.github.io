@@ -576,7 +576,8 @@ body { height: 100%; overflow: hidden; display: flex; flex-direction: column; ov
   white-space: normal; text-align: left; line-height: 1.15; padding-block: 5px; height: auto; min-height: 28px;
   animation: pop .35s var(--ease) both;
 }
-.wrap { flex: 1 1 auto; min-height: 0; width: 100%; padding-block: 6px; gap: 0; }
+/* oben Abstand: iOS zeichnet unter der Statusleiste einen Unschärfe-Streifen */
+.wrap { flex: 1 1 auto; min-height: 0; width: 100%; padding-block: 26px 6px; gap: 0; }
 .floor {
   flex: 1 1 auto; min-height: 0; grid-template-rows: 1fr;
   transform: translateY(var(--shift, 0px)) scale(var(--fit, 1)); transform-origin: top center;
@@ -676,7 +677,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   <div class="notice" id="notice" hidden=""></div>
 
 
-  <!--plan--><div class="floor" id="floor" data-fit="1.000" style="--row: 43px; --fit: 1.000;">
+  <!--plan--><div class="floor" id="floor" data-fit="1.000" style="--row: 42px; --fit: 1.000;">
     <div class="corridor" aria-hidden="true">
       <div class="lane" id="lane-l"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l4-4 4 4"></path></svg></div>
       <div class="lane" id="lane-r"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l4 4 4-4"></path></svg></div>
