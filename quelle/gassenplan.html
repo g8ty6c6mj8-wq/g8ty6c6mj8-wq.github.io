@@ -531,6 +531,76 @@ button, input { font: inherit; color: inherit; }
 .news li span { color: var(--muted); font-size: 14px; }
 .news .btn { width: 100%; }
 
+/* ---------- Entwurf: alles auf einer Bildschirmseite ---------- */
+html { height: 100%; box-sizing: border-box; }
+body { height: 100%; overflow: hidden; display: flex; flex-direction: column; overscroll-behavior: none; }
+/* Kopfleiste sitzt in der freien Ecke links oben (dort ist links neben Gasse 1–7 Platz) */
+.appbar.corner { position: static; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; border: 0; flex: 0 0 auto; margin-bottom: 6px; }
+.corner .appbar-in { padding: 0; display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+.corner .brand { gap: 7px; flex: 0 0 auto; }
+.corner .brand .logo { width: 28px; height: 28px; border-radius: 8px; }
+.corner .brand .logo svg { width: 17px; height: 17px; }
+.corner .brand h1 { font-size: 19px; }
+.corner .brand .sub { font-size: 11px; margin-top: 1px; }
+.bar-tools { display: flex; gap: 6px; }
+.search-btn {
+  flex: 1 1 auto; min-width: 0; height: 34px; padding: 0 10px; border-radius: 17px; cursor: pointer;
+  display: flex; align-items: center; gap: 7px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted); font: inherit; font-size: 13px; font-weight: 600;
+  box-shadow: var(--shadow-1); transition: transform .15s var(--ease);
+}
+.search-btn:active { transform: scale(.97); }
+.search-btn svg { flex: 0 0 auto; color: var(--ink); }
+.corner .icon-btn { width: 34px; height: 34px; box-shadow: var(--shadow-1); }
+.corner .syncline { height: 26px; padding: 0 9px; font-size: 11px; max-width: none; align-self: flex-start; }
+.filter-pill {
+  height: 28px; padding: 0 10px; border-radius: 14px; border: 0; cursor: pointer;
+  background: var(--mark); color: var(--mark-ink); font-family: var(--f-sign); font-weight: 700; font-size: 15px;
+  white-space: normal; text-align: left; line-height: 1.15; padding-block: 5px; height: auto; min-height: 28px;
+  animation: pop .35s var(--ease) both;
+}
+.wrap { flex: 1 1 auto; min-height: 0; width: 100%; padding-block: 6px; gap: 0; }
+.floor {
+  flex: 1 1 auto; min-height: 0; grid-template-rows: 1fr;
+  transform: translateY(var(--shift, 0px)) scale(var(--fit, 1)); transform-origin: top center;
+  transition: transform .35s var(--ease);
+}
+.side.left, .side.right, .corridor { grid-row: 1; min-height: 0; }
+.legend { flex: 0 1 auto; min-height: 0; overflow: hidden; gap: 6px; padding: 8px 9px; margin-bottom: 8px; font-size: 11px; }
+.legend .stats { display: flex; gap: 10px; }
+.legend .stats div { display: block; padding: 0; background: none; box-shadow: none; font-size: 12px; }
+.legend .stats b { font-size: 17px; }
+.legend ul { display: grid; grid-template-columns: auto auto; gap: 5px 8px; }
+.legend li { gap: 5px; }
+.legend .k { width: 14px; height: 11px; }
+.legend .k-plus { width: 12px; height: 12px; font-size: 9px; }
+.legend .version { font-size: 10px; letter-spacing: .03em; opacity: .8; }
+/* Vorne und Eingang als Kappen am Hauptgang statt eigener Zeilen */
+.corridor { padding-block: 58px; }
+.corridor .cap {
+  position: absolute; left: 50%; transform: translateX(-50%) rotate(180deg); writing-mode: vertical-rl;
+  font-size: 9px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; white-space: nowrap;
+  padding: 6px 2px; border-radius: 4px;
+}
+.corridor .cap-top { top: 6px; color: var(--muted); border: 1px solid var(--line-strong); background: var(--surface); }
+.corridor .cap-door { bottom: 6px; color: var(--mark-ink); background: var(--mark); box-shadow: 0 2px 8px color-mix(in srgb, var(--mark) 45%, transparent); }
+/* kompaktere Einträge, damit 19 Gassen auf den Bildschirm passen */
+.g .t { line-height: 15px; }
+.g.half:not(.free) { min-height: 15px; }
+.g.half:not(.free) .t { line-height: 13px; }
+/* Suche als Ausklapp-Feld unter der Kopfleiste */
+.search-scrim { position: fixed; inset: 0; z-index: 7; background: var(--scrim); animation: fade .25s ease both; }
+.search-panel {
+  position: fixed; left: 0; right: 0; top: 0; padding-top: env(safe-area-inset-top, 0px); z-index: 8;
+  background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: 0 14px 30px rgba(16, 24, 40, .14);
+  max-height: 72vh; max-height: 72dvh; overflow-y: auto; overscroll-behavior: contain;
+  animation: drop-panel .3s var(--ease) both;
+}
+@keyframes drop-panel { from { opacity: 0; transform: translateY(-12px); } }
+.search-panel-in { max-width: 560px; margin: 0 auto; padding: 12px 16px 14px; display: flex; flex-direction: column; gap: 10px; }
+.search-panel .finder { gap: 10px; }
+.search-panel #search-done { align-self: stretch; }
+
 /* ---------- Bewegung ---------- */
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
 @keyframes fade { from { opacity: 0; } }
@@ -560,52 +630,47 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   <div class="dev">Entwickelt von Kadir Atak</div>
 </div>
 
-<header class="appbar">
-  <div class="appbar-in">
-    <div class="brand">
-      <span class="logo" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 20 20"><g fill="#1b2129"><rect x="2" y="3" width="6" height="3" rx="1"/><rect x="2" y="8.5" width="6" height="3" rx="1"/><rect x="2" y="14" width="6" height="3" rx="1"/><rect x="12" y="3" width="6" height="3" rx="1"/><rect x="12" y="8.5" width="6" height="3" rx="1"/><rect x="12" y="14" width="6" height="3" rx="1"/></g></svg>
-      </span>
-      <div>
-        <h1>Gassenplan</h1>
-        <div class="sub">Halle · 31 Gassen</div>
-      </div>
-    </div>
-    <button class="syncline" id="syncline" type="button" hidden></button>
-    <button class="icon-btn" id="open-settings" type="button" aria-label="Einstellungen und Hilfe">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
-    </button>
-  </div>
-</header>
-
 <div class="wrap">
   <div class="notice" id="notice" hidden></div>
 
-  <section class="finder">
-    <label class="search" for="q">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M12.5 12.5L16 16"/></svg>
-      <input id="q" type="search" placeholder="Modell oder Charge suchen" autocomplete="off" enterkeyhint="search">
-      <button class="clear" id="q-clear" type="button" aria-label="Suche leeren" hidden>×</button>
-    </label>
-    <div class="chips scroll" id="model-chips"><span class="hint">Modelle werden geladen …</span></div>
-    <div class="results" id="results" hidden></div>
-  </section>
-
-  <div class="end end-front"><span class="pill">Vorne</span></div>
 
   <div class="floor" id="floor">
-    <div class="side-label">Links · 31–20</div>
     <div class="corridor" aria-hidden="true">
       <div class="lane" id="lane-l"></div>
       <div class="lane" id="lane-r"></div>
       <span class="name">Hauptgang</span>
+      <span class="cap cap-top">Vorne</span>
+      <span class="cap cap-door">Eingang</span>
     </div>
-    <div class="side-label r">Rechts · 1–19</div>
     <div class="side left">
+      <header class="appbar corner">
+        <div class="appbar-in">
+          <div class="brand">
+            <span class="logo" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20"><g fill="#1b2129"><rect x="2" y="3" width="6" height="3" rx="1"/><rect x="2" y="8.5" width="6" height="3" rx="1"/><rect x="2" y="14" width="6" height="3" rx="1"/><rect x="12" y="3" width="6" height="3" rx="1"/><rect x="12" y="8.5" width="6" height="3" rx="1"/><rect x="12" y="14" width="6" height="3" rx="1"/></g></svg>
+            </span>
+            <div>
+              <h1>Gassenplan</h1>
+              <div class="sub">Entwurf · 31 Gassen</div>
+            </div>
+          </div>
+          <div class="bar-tools">
+          <button class="search-btn" id="open-search" type="button" aria-label="Suchen">
+            <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M12.5 12.5L16 16"/></svg>
+            <span>Suchen</span>
+          </button>
+          <button class="icon-btn" id="open-settings" type="button" aria-label="Einstellungen und Hilfe">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+          </button>
+          </div>
+          <button class="filter-pill" id="filter-pill" type="button" hidden></button>
+          <button class="syncline" id="syncline" type="button" hidden></button>
+        </div>
+      </header>
       <div class="legend" id="legend">
         <div class="stats">
-          <div><b id="st-entries">0</b>Einträge</div>
-          <div><b id="st-chargen">0</b>Chargen</div>
+          <div><b id="st-entries">0</b> Einträge</div>
+          <div><b id="st-chargen">0</b> Chargen</div>
         </div>
         <ul>
           <li><i class="k k-gasse"></i>Gasse</li>
@@ -613,7 +678,8 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
           <li><i class="k k-belegt"></i>Belegt</li>
           <li><i class="k k-plus">+</i>Mittig eintragen</li>
         </ul>
-        <p>Rechts 1 → 19<br>Links 20 → 31</p>
+        <p>Rechts 1 → 19 nach hinten<br>Links 20 → 31 nach vorne</p>
+        <div class="version">Gassenplan <span class="app-version">Version 3.0-Entwurf</span> · Alpha</div>
       </div>
       <div class="rack" id="left" role="group" aria-label="Linke Seite"></div>
     </div>
@@ -622,8 +688,23 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     </div>
   </div>
 
-  <div class="end end-back" id="end-back"><span class="door"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5V2.5h7v10M9.5 12.5h2M6.5 7.5h.01"/></svg>Eingang · hinten</span></div>
-  <div class="version">Gassenplan <span class="app-version">Version 2.7</span> · Alpha</div>
+  <!--floor-end-->
+</div>
+
+<div class="search-scrim" id="search-scrim" hidden></div>
+<div class="search-panel" id="search-panel" hidden>
+  <div class="search-panel-in">
+    <section class="finder">
+    <label class="search" for="q">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M12.5 12.5L16 16"/></svg>
+      <input id="q" type="search" placeholder="Modell oder Charge suchen" autocomplete="off" enterkeyhint="search">
+      <button class="clear" id="q-clear" type="button" aria-label="Suche leeren" hidden>×</button>
+    </label>
+    <div class="chips scroll" id="model-chips"><span class="hint">Modelle werden geladen …</span></div>
+    <div class="results" id="results" hidden></div>
+    </section>
+    <button class="btn" id="search-done" type="button">Fertig</button>
+  </div>
 </div>
 
 <div class="scrim" id="scrim" hidden></div>
@@ -689,7 +770,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 <script>
 (() => {
   // Version: bei jeder Verbesserung erhöhen (siehe CHANGELOG.md)
-  const APP_VERSION = '2.8', APP_STAGE = 'Alpha';
+  const APP_VERSION = '3.0-Entwurf', APP_STAGE = 'Alpha';
   // App-Versionen mit Datum: wird beim Bauen aus CHANGELOG.md eingesetzt
   const VERSION_HISTORY = /*VERSION_HISTORY*/[];
   const TOTAL = 31, RIGHT_END = 19;
@@ -701,10 +782,8 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   // Was ist neu: erscheint bei jedem Öffnen, bis man es schließt; bei der nächsten Version wieder
   // silent: true = Update ohne Fenster „Was ist neu“ (nur wenn Kadir Atak das so will)
   const WHATS_NEW = {
-    version: '2.8', from: '2.7',
-    items: [
-      ['Zuverlässigere Updates', 'Neue Versionen werden jetzt zuverlässiger geladen.'],
-    ],
+    version: '3.0-Entwurf', from: '2.7', silent: true,
+    items: [],
   };
   const NEWS_KEY = 'gassenplan-neu-gelesen';
   function showNews() {
@@ -877,6 +956,11 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 
   // ---------- Suche und Modellfilter ----------
   function renderFinder() {
+    // aktiver Filter als Schild in der Kopfleiste; Antippen hebt ihn auf
+    const pill = $('filter-pill');
+    const active = state.filterModel ? (isBelegt(state.filterModel) ? 'Belegt' : state.filterModel) : (state.query.trim() ? '„' + state.query.trim() + '“' : '');
+    pill.hidden = !active;
+    pill.textContent = active ? active + '  ×' : '';
     const chips = $('model-chips');
     const prevInp = $('new-model');
     const draft = prevInp ? prevInp.value : '';
@@ -941,6 +1025,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
       const detail = modelName(p.modell) + (matchCh.length ? ' · Charge ' + matchCh.join(', ') : '');
       res.append(el('button', { type: 'button', class: 'hit', onclick: () => open(p.gasse) },
         el('b', { class: isHalf(p.gasse) ? 'half' : '' }, label(p.gasse)), el('span', {}, (isHalf(p.gasse) ? 'Mittig · ' : '') + detail)));
+      res.lastChild.addEventListener('click', closeSearch);
     });
   }
 
@@ -981,6 +1066,20 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   $('close-settings').addEventListener('click', () => hideSheet('settings'));
   $('syncline').addEventListener('click', () => { if (state.current) close(); showSheet('settings'); });
 
+  // ---------- Suche ausklappen ----------
+  function openSearch() {
+    if (state.current) close();
+    $('search-panel').hidden = false;
+    $('search-scrim').hidden = false;
+  }
+  function closeSearch() { $('search-panel').hidden = true; $('search-scrim').hidden = true; }
+  $('open-search').addEventListener('click', () => $('search-panel').hidden ? openSearch() : closeSearch());
+  $('search-done').addEventListener('click', closeSearch);
+  $('search-scrim').addEventListener('click', closeSearch);
+  $('filter-pill').addEventListener('click', () => {
+    state.filterModel = null; state.query = ''; $('q').value = ''; $('q-clear').hidden = true; render();
+  });
+
   // ---------- Gasse öffnen ----------
   function open(n) {
     if (state.current !== n) state.armed = null;
@@ -988,20 +1087,20 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
     hideSheet('settings');
     showSheet('sheet');
     render();
-    // die Gasse mittig in den freien Bereich zwischen Kopfleiste und Fenster holen
+    // Kein Scrollen: liegt die Gasse hinter dem Fenster, rutscht der Plan ein Stück nach oben
     requestAnimationFrame(() => {
-      document.querySelector('.wrap').style.paddingBottom = ($('sheet').offsetHeight + 24) + 'px';
+      const fl = $('floor');
+      const cur = parseFloat(fl.style.getPropertyValue('--shift')) || 0;
       const r = buttons[n].getBoundingClientRect();
-      const top = document.querySelector('.appbar').getBoundingClientRect().bottom;
-      const free = window.innerHeight - $('sheet').offsetHeight - top;
-      const want = top + Math.max(free, r.height + 16) / 2 - r.height / 2;
-      window.scrollTo({ top: Math.max(0, window.scrollY + r.top - want), behavior: 'smooth' });
+      const sheetTop = window.innerHeight - $('sheet').offsetHeight;
+      const over = (r.bottom - cur) + 10 - sheetTop;
+      fl.style.setProperty('--shift', over > 0 ? (-over) + 'px' : '0px');
     });
   }
   function close() {
     state.current = null; state.armed = null;
     hideSheet('sheet');
-    document.querySelector('.wrap').style.paddingBottom = '';
+    $('floor').style.setProperty('--shift', '0px');
     render();
   }
 
@@ -1109,7 +1208,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   });
 
   // Alle Gassen gleich dick: so hoch, wie die vollste Gasse samt halben Zwischenplätzen braucht
-  const MIN_ROW = 34, EDGE = 5, GAP = 5;   // GAP: Abstand zwischen Zwischenplatz-Kasten und Gassen-Einträgen
+  const MIN_ROW = 30, EDGE = 2, GAP = 3;   // Entwurf: enger, damit alles auf eine Seite passt
   function fitRows() {
     const floor = $('floor');
     const half = s => (s && s.classList.contains('seam') && !s.firstElementChild.classList.contains('free'))
@@ -1122,7 +1221,13 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
       const stack = a.querySelector('.stack');
       row = Math.max(row, Math.ceil((stack ? stack.offsetHeight : 0) + pt + pb));
     });
+    // Entwurf: Gassen füllen genau die freie Höhe. Reicht sie nicht, wird der ganze Plan leicht verkleinert.
+    const fits = Math.floor((floor.clientHeight - 2) / 19);
+    let scale = 1;
+    if (row <= fits) row = fits; else scale = Math.max(0.6, fits / row);
     floor.style.setProperty('--row', row + 'px');
+    floor.style.setProperty('--fit', scale.toFixed(3));
+    floor.dataset.fit = scale.toFixed(3);
   }
   function render() { renderPlan(); fitRows(); renderFinder(); renderSheet(); }
   window.addEventListener('resize', fitRows);

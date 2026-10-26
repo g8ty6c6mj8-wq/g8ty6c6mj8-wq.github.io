@@ -113,7 +113,7 @@ src = must_replace(src, '<div class="chips scroll" id="model-chips">', '<!--chip
 chips_end = src.index("</div>", src.index('<!--chips-->')) + len("</div>")
 src = src[:chips_end] + "<!--/chips-->" + src[chips_end:]
 src = must_replace(src, '  <div class="floor" id="floor">', '  <!--plan--><div class="floor" id="floor">')
-src = must_replace(src, '\n\n  <div class="end end-back" id="end-back">', '<!--/plan-->\n\n  <div class="end end-back" id="end-back">')
+src = must_replace(src, '\n  <!--floor-end-->', '<!--/plan-->')
 
 # 2c. App-Versionen mit Datum aus CHANGELOG.md
 _hist = []

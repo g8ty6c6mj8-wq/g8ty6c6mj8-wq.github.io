@@ -454,7 +454,7 @@
   }
   if ($('admin') && subtle) {
     $('admin').hidden = !isAdminDevice();
-    const ver = document.querySelector('.wrap > .version');
+    const ver = document.querySelector('.legend .version');
     let taps = [];
     if (ver) ver.addEventListener('click', () => {
       const now = Date.now();
