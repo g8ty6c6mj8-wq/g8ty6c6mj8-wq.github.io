@@ -688,13 +688,12 @@ body.room-other .floor .rack, body.room-other .floor .corridor, body.room-other 
 body.room-other .room-empty {
   position: absolute; left: 0; right: 0; bottom: 0; top: var(--empty-top, 120px); z-index: 4;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 24px; text-align: center;
-  border: 1.5px dashed var(--line-strong); border-radius: 14px; color: var(--muted);
+  color: var(--muted);
   animation: fade .3s ease both;
 }
-.room-empty svg { color: var(--line-strong); margin-bottom: 4px; }
-.room-empty b { font-family: var(--f-sign); font-size: 22px; letter-spacing: .03em; color: var(--ink); }
-.room-empty p { margin: 0; font-size: 14px; line-height: 1.45; max-width: 240px; }
-.room-empty .btn { margin-top: 8px; }
+.room-empty b { font-family: var(--f-sign); font-size: 22px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+/* andere Räume: eigene Modelle und Logik folgen später, darum dort auch keine Suche */
+body.room-other .search-btn { visibility: hidden; }
 /* Suche als Ausklapp-Feld unter der Kopfleiste */
 .search-scrim { position: fixed; inset: 0; z-index: 7; background: var(--scrim); animation: fade .25s ease both; }
 .search-panel {
@@ -743,10 +742,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 
   <div class="floor" id="floor">
     <div class="room-empty" id="room-empty" aria-live="polite">
-      <svg width="34" height="34" viewBox="0 0 20 20" aria-hidden="true"><g fill="currentColor"><rect x="2" y="3" width="6" height="3" rx="1"/><rect x="2" y="8.5" width="6" height="3" rx="1"/><rect x="2" y="14" width="6" height="3" rx="1"/><rect x="12" y="3" width="6" height="3" rx="1"/><rect x="12" y="8.5" width="6" height="3" rx="1"/><rect x="12" y="14" width="6" height="3" rx="1"/></g></svg>
-      <b id="room-empty-name">Versandmechanik</b>
-      <p>Der Plan für diesen Raum wird noch eingerichtet.</p>
-      <button class="btn" type="button" id="room-back">Zur Knorr-Ansicht</button>
+      <b>In Bearbeitung</b>
     </div>
     <div class="corridor" aria-hidden="true">
       <div class="lane" id="lane-l"></div>
@@ -805,7 +801,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 <div class="room-menu" id="room-menu" role="menu" aria-label="Raum wählen" hidden>
   <div class="room-menu-h">Raum wählen</div>
   <button type="button" role="menuitemradio" data-room="knorr"><span class="nr">1</span><span class="nm">Knorr-Ansicht</span><svg class="ok" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
-  <button type="button" role="menuitemradio" data-room="versandmechanik"><span class="nr">2</span><span class="nm">Versandmechanik</span><svg class="ok" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
+  <button type="button" role="menuitemradio" data-room="versandmechanik"><span class="nr">2</span><span class="nm">Versand Mechanik</span><svg class="ok" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
   <button type="button" role="menuitemradio" data-room="fortknox"><span class="nr">3</span><span class="nm">Versand Fort Knox</span><svg class="ok" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg></button>
 </div>
 <div class="search-scrim" id="search-scrim" hidden></div>
@@ -1185,14 +1181,13 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 
   // ---------- Räume ----------
   // Entwurf: Raum 1 ist der bisherige Plan, Raum 2 und 3 bekommen ihren Plan später
-  const ROOMS = [{ id: 'knorr', name: 'Knorr-Ansicht' }, { id: 'versandmechanik', name: 'Versandmechanik' }, { id: 'fortknox', name: 'Versand Fort Knox' }];
+  const ROOMS = [{ id: 'knorr', name: 'Knorr-Ansicht' }, { id: 'versandmechanik', name: 'Versand Mechanik' }, { id: 'fortknox', name: 'Versand Fort Knox' }];
   const ROOM_KEY = 'gassenplan-raum';
   let room = ROOMS[0].id;
   try { const r = localStorage.getItem(ROOM_KEY); if (ROOMS.some(x => x.id === r)) room = r; } catch (_) {}
   function renderRoom() {
     const r = ROOMS.find(x => x.id === room), empty = room !== ROOMS[0].id;
     $('room-name').textContent = r.name;
-    $('room-empty-name').textContent = r.name;
     document.body.classList.toggle('room-other', empty);
     if (empty) {
       const floor = $('floor'), head = document.querySelector('.appbar.corner');
@@ -1222,7 +1217,6 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   $('room-btn').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('room-btn').click(); } });
   $('room-scrim').addEventListener('click', closeRooms);
   $('room-menu').addEventListener('click', e => { const b = e.target.closest('[data-room]'); if (!b) return; setRoom(b.dataset.room); closeRooms(); });
-  $('room-back').addEventListener('click', () => setRoom(ROOMS[0].id));
   window.addEventListener('resize', () => { if (room !== ROOMS[0].id) renderRoom(); });
   renderRoom();
 
