@@ -689,7 +689,7 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 <script>
 (() => {
   // Version: bei jeder Verbesserung erhöhen (siehe CHANGELOG.md)
-  const APP_VERSION = '2.7', APP_STAGE = 'Alpha';
+  const APP_VERSION = '2.8', APP_STAGE = 'Alpha';
   // App-Versionen mit Datum: wird beim Bauen aus CHANGELOG.md eingesetzt
   const VERSION_HISTORY = /*VERSION_HISTORY*/[];
   const TOTAL = 31, RIGHT_END = 19;
@@ -701,8 +701,10 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   // Was ist neu: erscheint bei jedem Öffnen, bis man es schließt; bei der nächsten Version wieder
   // silent: true = Update ohne Fenster „Was ist neu“ (nur wenn Kadir Atak das so will)
   const WHATS_NEW = {
-    version: '2.7', from: '2.6', silent: true,
-    items: [],
+    version: '2.8', from: '2.7',
+    items: [
+      ['Zuverlässigere Updates', 'Neue Versionen werden jetzt zuverlässiger geladen.'],
+    ],
   };
   const NEWS_KEY = 'gassenplan-neu-gelesen';
   function showNews() {

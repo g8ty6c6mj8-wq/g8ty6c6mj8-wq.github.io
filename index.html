@@ -769,9 +769,9 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
 (() => {
   const SOURCE = '<!doctype html>\n' + document.documentElement.outerHTML;
   // Version: bei jeder Verbesserung erhöhen (siehe CHANGELOG.md)
-  const APP_VERSION = '2.7', APP_STAGE = 'Alpha';
+  const APP_VERSION = '2.8', APP_STAGE = 'Alpha';
   // App-Versionen mit Datum: wird beim Bauen aus CHANGELOG.md eingesetzt
-  const VERSION_HISTORY = [{"v": "2.7", "d": "15.10.2026", "t": "Datenschutzhinweise gekürzt"}, {"v": "2.6", "d": "15.10.2026", "t": "Datenschutzhinweise in den Einstellungen"}, {"v": "2.5", "d": "13.10.2026", "t": "Interne Verbesserungen, ohne Hinweisfenster"}, {"v": "2.4", "d": "13.10.2026", "t": "Interne Verbesserungen für den Verantwortlichen"}, {"v": "2.3", "d": "13.10.2026", "t": "Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge"}, {"v": "2.2", "d": "12.10.2026", "t": "Startbild nennt den Entwickler: Kadir Atak"}, {"v": "2.1", "d": "12.10.2026", "t": "Mehr Abstand zwischen Zwischenplätzen und den Einträgen der Gassen daneben"}, {"v": "2.0", "d": "12.10.2026", "t": "Neues Erscheinungsbild: Kopfleiste mit Live-Status, Regale als Karten, Übersicht vorne links"}, {"v": "1.x", "d": "12.10.2026", "t": "1.9 Zwischenplätze blau, Schild abgesetzt von der Gassennummer, flachere Gassen"}];
+  const VERSION_HISTORY = [{"v": "2.8", "d": "26.10.2026", "t": "Updates werden zuverlässiger geladen"}, {"v": "2.7", "d": "15.10.2026", "t": "Datenschutzhinweise gekürzt"}, {"v": "2.6", "d": "15.10.2026", "t": "Datenschutzhinweise in den Einstellungen"}, {"v": "2.5", "d": "13.10.2026", "t": "Interne Verbesserungen, ohne Hinweisfenster"}, {"v": "2.4", "d": "13.10.2026", "t": "Interne Verbesserungen für den Verantwortlichen"}, {"v": "2.3", "d": "13.10.2026", "t": "Neue Auswahl „Belegt“: Gasse oder Zwischenplatz als besetzt markieren, ohne Modell und Charge"}, {"v": "2.2", "d": "12.10.2026", "t": "Startbild nennt den Entwickler: Kadir Atak"}, {"v": "2.1", "d": "12.10.2026", "t": "Mehr Abstand zwischen Zwischenplätzen und den Einträgen der Gassen daneben"}, {"v": "2.0", "d": "12.10.2026", "t": "Neues Erscheinungsbild: Kopfleiste mit Live-Status, Regale als Karten, Übersicht vorne links"}, {"v": "1.x", "d": "12.10.2026", "t": "1.9 Zwischenplätze blau, Schild abgesetzt von der Gassennummer, flachere Gassen"}];
   const TOTAL = 31, RIGHT_END = 19;
   const $ = id => document.getElementById(id);
   document.querySelectorAll('.app-version').forEach(e => { e.textContent = 'Version ' + APP_VERSION; });
@@ -781,8 +781,10 @@ body.intro .seam > .g, body.intro .legend { animation: fade .5s ease both; anima
   // Was ist neu: erscheint bei jedem Öffnen, bis man es schließt; bei der nächsten Version wieder
   // silent: true = Update ohne Fenster „Was ist neu“ (nur wenn Kadir Atak das so will)
   const WHATS_NEW = {
-    version: '2.7', from: '2.6', silent: true,
-    items: [],
+    version: '2.8', from: '2.7',
+    items: [
+      ['Zuverlässigere Updates', 'Neue Versionen werden jetzt zuverlässiger geladen.'],
+    ],
   };
   const NEWS_KEY = 'gassenplan-neu-gelesen';
   function showNews() {

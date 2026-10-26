@@ -2,7 +2,7 @@
 const { chromium } = require(require('child_process').execSync('npm root -g').toString().trim() + '/playwright');
 const fs = require('fs');
 (async () => {
-  const silent = /silent: true/.test(fs.readFileSync('site/index.html', 'utf8'));
+  const silent = /silent: true,/.test(fs.readFileSync('site/index.html', 'utf8'));
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const page = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));

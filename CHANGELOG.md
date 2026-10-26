@@ -5,6 +5,9 @@ kurz eingeblendet. Bei jeder Verbesserung wird sie erhöht.
 
 Sicherungen: Für jede Version gibt es einen Zweig `backup-<Version>` (z. B. `backup-2.3`) mit genau diesem Stand. Zum Zurücksetzen wird `main` auf diesen Stand gebracht.
 
+## 2.8 · Alpha · 26.10.2026
+- Updates werden zuverlässiger geladen
+
 ## 2.7 · Alpha · 15.10.2026
 - Datenschutzhinweise gekürzt
 

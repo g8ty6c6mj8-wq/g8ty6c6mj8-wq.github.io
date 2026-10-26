@@ -6,7 +6,7 @@ const { spawn } = require('child_process');
   const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
   const page = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message));
-  await page.goto('http://localhost:8769/'); await page.waitForTimeout(2200);
+  await page.goto('http://localhost:8769/'); await page.waitForTimeout(2200); if (await page.locator('#news-close').count()) await page.click('#news-close');
   // Admin-Schlüssel festlegen, dann einen 100 Tage alten Protokolleintrag unterschieben
   const v = page.locator('.wrap > .version'); await v.scrollIntoViewIfNeeded(); for (let i = 0; i < 5; i++) await v.click({ force: true }); await page.waitForTimeout(800);
   await page.fill('#admin-pw', 'geheim123'); await page.fill('#admin-pw2', 'geheim123'); await page.click('#admin-go'); await page.waitForTimeout(2500);
